@@ -4,8 +4,10 @@
 #include <Windows.h>
 
 namespace YellowRectangleCyanCircle {
-	using Handle = HWND;
-	using HookEventId = DWORD;
+	//using HWND = HWND;
+	//using DWORD = DWORD;
+	//using HWINEVENTHOOK = HWINEVENTHOOK;
+	//using LONG = LONG;
 
 	namespace Rect {
 		using Rect = cv::Rect;

@@ -3,5 +3,17 @@
   <ItemGroup>
     <ClCompile Include="..\YellowRectangleCyanCircle\src\game.test.cpp" />
     <ClCompile Include="..\YellowRectangleCyanCircle\src\types.test.cpp" />
+    <ClCompile Include="..\YellowRectangleCyanCircle\src\hook.test.cpp" />
+    <ClCompile Include="..\YellowRectangleCyanCircle\src\winapi.test.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gtest\gtest-all.cc" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\lib\native\src\gmock\gmock-all.cc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\YellowRectangleCyanCircle\src\winapi.test.hpp" />
+    <ClInclude Include="..\YellowRectangleCyanCircle\src\hook.test.hpp" />
+    <ClInclude Include="..\YellowRectangleCyanCircle\src\game.test.hpp" />
   </ItemGroup>
 </Project>

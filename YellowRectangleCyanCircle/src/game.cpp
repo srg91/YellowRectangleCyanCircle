@@ -1,61 +1,50 @@
 #include "game.hpp"
 
 namespace YellowRectangleCyanCircle {
-	const char* GameAlreadyConstructed::what() const noexcept {
-		return "Only one instance of the Game class can exist";
-	}
+	Game::Game(std::shared_ptr<IWinAPI> winAPI, const std::wstring_view windowTitle, HWND hWnd, Rect::Rect rect) : 
+		hWnd(hWnd),
+		rect(rect),
+		winAPI(winAPI),
+		windowTitle(windowTitle)
+	{}
 
-	Game* Game::instance = nullptr;
-	std::mutex Game::instanceMutex;
-
-	Game::Game(std::shared_ptr<IWinAPI> winAPI) : 
-		isFound(false), 
-		isHookEnabled(false),
-		handle(0)
-	{
-		std::lock_guard<std::mutex> lock(this->instanceMutex);
-		if (this->instance) throw GameAlreadyConstructed();
-
-		this->instance = this;
-		this->winAPI = winAPI;
-	}
-
-	void Game::EnableHook(bool value) {
-		if (this->IsHookEnabled() == value) return;
-
-		if (this->IsHookEnabled()) {
-			// UnhookWinEvent(hook_on_create)
-			// UnhookWinEvent(hook_on_destroy)
-			// UnhookWinEvent(hook_on_move)
-		} else {
-			Handle h = FindWindow(nullptr, L"WindowsProject1");
-			if (h) {
-				this->isFound = true;
-			}
-			else {
-				this->isFound = false;
-			}
-
+	void Game::OnWindowCreated(HWND hWnd) {
+		if (this->IsFound()) return;
+		
+		std::wstring title = this->winAPI->GetWindowText(hWnd);
+		if (title == this->windowTitle) {
+			std::unique_lock lock(this->instanceMutex);
+			this->hWnd = hWnd;
+			this->rect = this->winAPI->GetWindowRect(this->hWnd);
 		}
-
-
-
-		// FindWindow
-		// If not found, set hook to create objects
-		// If found, set several hooks: 
-		// - To move / size 
-		// - To destroy
+	}
+	
+	void Game::OnWindowDestroyed(HWND hWnd) {
+		if (!this->IsFound()) return;
+		if (hWnd == this->hWnd) this->clear();
 	}
 
-	bool Game::IsHookEnabled() const noexcept {
-		return this->isHookEnabled;
+	void Game::OnWindowMoved(HWND hWnd) {
+		if (!this->IsFound()) return;
+		if (hWnd != this->hWnd) return;
+		std::unique_lock lock(this->instanceMutex);
+		this->rect = this->winAPI->GetWindowRect(this->hWnd);
 	}
 
 	bool Game::IsFound() const noexcept {
-		return this->isFound;
+		std::shared_lock lock(this->instanceMutex);
+		return this->hWnd ? true : false;
 	}
 
 	Rect::Rect Game::GetRect() const noexcept {
+		std::shared_lock lock(this->instanceMutex);
 		return this->rect;
 	}
+
+	void Game::clear() {
+		std::unique_lock lock(this->instanceMutex);
+		this->hWnd = 0;
+		this->rect = Rect::Rect();
+	}
+
 }
