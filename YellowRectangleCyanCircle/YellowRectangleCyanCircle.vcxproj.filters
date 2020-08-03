@@ -30,6 +30,18 @@
     <ClCompile Include="src\hook.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\direct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\screen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\desktop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\main.hpp">
@@ -47,10 +59,19 @@
     <ClInclude Include="src\hook.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\resource.h">
+    <ClInclude Include="src\resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\resource.hpp">
+    <ClInclude Include="src\direct.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\screen.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\utils.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\desktop.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

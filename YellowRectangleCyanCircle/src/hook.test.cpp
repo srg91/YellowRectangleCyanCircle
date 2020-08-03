@@ -48,6 +48,7 @@ namespace TestHook {
 		EXPECT_CALL(*winAPI, SetWinEventHook).
 			Times(2).
 			WillRepeatedly(Return(Defaults::NonZeroHookHandle));
+		EXPECT_CALL(*winAPI, UnhookWinEvent).Times(AnyNumber());
 
 		{
 			auto hook = Hook(winAPI, Defaults::EventIdCreate);
@@ -79,6 +80,7 @@ namespace TestHook {
 		EXPECT_CALL(*winAPI, SetWinEventHook).
 			WillOnce(Return(Defaults::ZeroHookHandle)).
 			WillRepeatedly(Return(Defaults::NonZeroHookHandle));
+		EXPECT_CALL(*winAPI, UnhookWinEvent).Times(1);
 
 		auto hook = Defaults::CreateExampleHook(winAPI);
 
@@ -119,6 +121,7 @@ namespace TestHook {
 
 	TEST(TestHook, CallbackSimple) {
 		auto winAPI = std::make_shared<MockWinAPI>();
+		EXPECT_CALL(*winAPI, UnhookWinEvent).Times(1);
 		EXPECT_TRUE(
 			CallbackTestFunc(
 				winAPI,
@@ -137,6 +140,7 @@ namespace TestHook {
 				WillOnce(
 					Return(ByMove(std::move(obj)))
 				);
+			EXPECT_CALL(*winAPI, UnhookWinEvent).Times(1);
 
 			bool result = CallbackTestFunc(
 				winAPI,

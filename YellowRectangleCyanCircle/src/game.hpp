@@ -23,10 +23,7 @@ namespace YellowRectangleCyanCircle {
 		Rect::Rect rect;
 		mutable std::shared_mutex instanceMutex;
 
-		// constexpr static const wchar_t* windowName = L"Fs`oe!Uidgu!@tun!W";
-
 		std::wstring windowTitle;
-
 		std::shared_ptr<IWinAPI> winAPI;
 
 		void clear();

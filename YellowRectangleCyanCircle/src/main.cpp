@@ -2,8 +2,10 @@
 #include "hook.hpp"
 #include "main.hpp"
 #include "resource.hpp"
+#include "desktop.hpp"
 
 #include <chrono>
+#include <fstream>
 #include <sstream>
 #include <thread>
 
@@ -63,6 +65,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     
     using namespace YellowRectangleCyanCircle;
 
+    Desktop desk(std::make_shared<Direct>());
+    
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(1s);
+
+    std::vector<std::uint8_t> b;
+    HRESULT hr = desk.Duplicate(b);
+    if (SUCCEEDED(hr)) {
+        std::fstream f("D:\\file.png", std::ios::binary | std::ios::out);
+        f.write(reinterpret_cast<char*>(std::data(b)), std::size(b));
+        f.close();
+    }
+
     auto winAPI = std::make_shared<WinAPI>();
 
     auto h = winAPI->FindWindowByName(gameWindowName);
@@ -74,7 +89,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     // auto game = Game(winAPI, 
 
-    hookCW.SetCallback([&hookCW, &hookDW, &hookMW, &game](HWND hWnd, LONG idObject) {
+    hookCW.SetCallback([&hookCW, &hookDW, &hookMW, &game, &desk](HWND hWnd, LONG idObject) {
         game.OnWindowCreated(hWnd);
         if (game.IsFound()) {
             OutputDebugString(L"Game found with handle: ");
@@ -88,6 +103,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
             hookMW.SetHandle(hWnd);
             hookMW.Enable();
+
+            //using namespace std::chrono_literals;
+            //std::this_thread::sleep_for(1s);
+
+            //std::vector<std::uint8_t> b;
+            //HRESULT hr = desk.Duplicate(b);
+            //if (SUCCEEDED(hr)) {
+            //    std::fstream f("D:\\file.png", std::ios::binary | std::ios::out);
+            //    f.write(reinterpret_cast<char*>(std::data(b)), std::size(b));
+            //    f.close();
+            //}
         }
     });
 

@@ -38,15 +38,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\YellowRectangleCyanCircle\src\desktop.test.cpp" />
+    <ClCompile Include="..\YellowRectangleCyanCircle\src\direct.test.cpp" />
     <ClCompile Include="..\YellowRectangleCyanCircle\src\game.test.cpp" />
     <ClCompile Include="..\YellowRectangleCyanCircle\src\hook.test.cpp" />
     <ClCompile Include="..\YellowRectangleCyanCircle\src\types.test.cpp" />
+    <ClCompile Include="..\YellowRectangleCyanCircle\src\utils.test.cpp" />
     <ClCompile Include="..\YellowRectangleCyanCircle\src\winapi.test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\YellowRectangleCyanCircle\src\desktop.test.hpp" />
+    <ClInclude Include="..\YellowRectangleCyanCircle\src\direct.test.hpp" />
     <ClInclude Include="..\YellowRectangleCyanCircle\src\game.test.hpp" />
     <ClInclude Include="..\YellowRectangleCyanCircle\src\hook.test.hpp" />
     <ClInclude Include="..\YellowRectangleCyanCircle\src\winapi.test.hpp" />
@@ -75,7 +80,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>X64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X64;_TEST;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>

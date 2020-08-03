@@ -25,21 +25,12 @@ namespace YellowRectangleCyanCircle {
 
 	struct IHook {
 		virtual ~IHook() {};
-		// virtual void SetCallback(std::function<void(HWND)>) = 0;
 
 		virtual void Enable() = 0;
 		virtual void Disable() = 0;
 
 		virtual bool IsEnabled() const noexcept = 0;
-		// virtual DWORD GetEventId() const noexcept = 0;
-	//protected:
-	//	virtual bool canBeEnabled() const noexcept = 0;
 	};
-
-	//struct IHookOnHandle {
-	//	virtual HWND GetHandle() const noexcept = 0;
-	//	virtual void SetHandle(HWND hWnd) noexcept = 0;
-	//};
 
 	struct IHookCallbackReceiver {
 		virtual ~IHookCallbackReceiver() {};
@@ -100,33 +91,4 @@ namespace YellowRectangleCyanCircle {
 
 		Hook(const Hook&) = delete;
 	};
-
-	//class HookCreateWindow : public Hook {
-	//public:
-	//	HookCreateWindow(std::shared_ptr<IWinAPI> winAPI);
-	//};
-
-//	class HookDestroyWindow : public Hook, public IHookOnHandle {
-//	public:
-//		HookDestroyWindow(std::shared_ptr<IWinAPI> winAPI);
-//
-//		HWND GetHandle() const noexcept override final;
-//		void SetHandle(HWND hWnd) noexcept override final;
-//	private:
-//		HWND hWnd;
-//
-//		bool canBeEnabled() const noexcept override;
-//	};
-//
-//	class HookMoveWindow : public Hook, public IHookOnHandle {
-//	public:
-//		HookMoveWindow(std::shared_ptr<IWinAPI> winAPI);
-//
-//		HWND GetHandle() const noexcept override final;
-//		void SetHandle(HWND hWnd) noexcept override final;
-//	private:
-//		HWND hWnd;
-//
-//		bool canBeEnabled() const noexcept override;
-//	};
 }

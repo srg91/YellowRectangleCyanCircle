@@ -19,18 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\desktop.cpp" />
+    <ClCompile Include="src\direct.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\screen.cpp" />
     <ClCompile Include="src\types.cpp" />
+    <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\winapi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\desktop.hpp" />
+    <ClInclude Include="src\direct.hpp" />
     <ClInclude Include="src\game.hpp" />
     <ClInclude Include="src\hook.hpp" />
     <ClInclude Include="src\main.hpp" />
     <ClInclude Include="src\resource.hpp" />
+    <ClInclude Include="src\screen.hpp" />
     <ClInclude Include="src\types.hpp" />
+    <ClInclude Include="src\utils.hpp" />
     <ClInclude Include="src\winapi.hpp" />
   </ItemGroup>
   <ItemGroup>

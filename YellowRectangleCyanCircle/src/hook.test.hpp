@@ -9,6 +9,7 @@
 namespace TestHook {
 	using namespace YellowRectangleCyanCircle;
 
+	using ::testing::AnyNumber;
 	using ::testing::ByMove;
 	using ::testing::DoAll;
 	using ::testing::Return;
