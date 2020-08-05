@@ -9,6 +9,9 @@
 namespace TestHook {
 	using namespace YellowRectangleCyanCircle;
 
+	using TestWinAPI::MockWinAPI;
+	using TestWinAPI::MockAccessibleObject;
+
 	using ::testing::AnyNumber;
 	using ::testing::ByMove;
 	using ::testing::DoAll;

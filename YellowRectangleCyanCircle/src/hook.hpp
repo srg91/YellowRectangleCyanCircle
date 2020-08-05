@@ -1,11 +1,12 @@
 #pragma once
 
-
+#include "interface.hpp"
 #include "winapi.hpp"
 #include "types.hpp"
 
 #include <Windows.h>
 
+#include <atomic>
 #include <exception>
 #include <functional>
 #include <memory>
@@ -23,28 +24,11 @@ namespace YellowRectangleCyanCircle {
 		DWORD eventId;
 	};
 
-	struct IHook {
-		virtual ~IHook() {};
-
-		virtual void Enable() = 0;
-		virtual void Disable() = 0;
-
-		virtual bool IsEnabled() const noexcept = 0;
-	};
-
-	struct IHookCallbackReceiver {
-		virtual ~IHookCallbackReceiver() {};
-
-		virtual void OnWindowCreated(HWND hWnd) {};
-		virtual void OnWindowDestroyed(HWND hWnd) {};
-		virtual void OnWindowMoved(HWND hWnd) {};
-	};
-
 	class Hook : public IHook {
 	public:
 		Hook(Hook&& other) noexcept;
 		Hook(std::shared_ptr<IWinAPI> winAPI, DWORD eventId, HWND hWnd = 0, bool hWndStrict = false, bool assignToWindow = false);
-		~Hook() override;
+		~Hook();
 		void SetCallback(std::function<void(HWND, LONG)> func) noexcept;
 
 		bool IsEnabled() const noexcept override final;
@@ -71,6 +55,10 @@ namespace YellowRectangleCyanCircle {
 
 		static std::unordered_map<DWORD, Hook*> instances;
 		static std::shared_mutex instancesMutex;
+
+		// Looks like then we processing callback it can be interrupted
+		// This is little way to recursive calls
+		static std::unordered_map<DWORD, std::atomic<bool>> callbackBreaker;
 
 		static Hook* getInstance(DWORD eventId);
 		static void registerInstance(DWORD eventId, Hook* instance);

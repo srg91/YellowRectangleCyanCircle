@@ -178,13 +178,7 @@ namespace YellowRectangleCyanCircle {
 		direct(direct)
 	{
 		DesktopDuplication::OutputByDeviceName(direct, displayName, this->output);
-		HRESULT hr = DesktopDuplication::CreateDevice(direct, this->output, this->device, this->context);
-		if (SUCCEEDED(hr)) {
-			hr = DesktopDuplication::InitializeOnDevice(this->device, this->output, this->deskDupl, this->deskDuplDesc);
-			if (SUCCEEDED(hr)) {
-				DesktopDuplication::FormatFrameDescription(this->deskDuplDesc, this->frameDesc, this->cpuFrameDesc);
-			}
-		}
+		this->initialize();
 	}
 
 	std::uint32_t Desktop::GetWidth() const {
@@ -195,13 +189,39 @@ namespace YellowRectangleCyanCircle {
 		return DesktopDuplication::CalcDesktopHeight(this->deskDuplDesc);
 	}
 
-	HRESULT Desktop::Duplicate(std::vector<std::uint8_t>& bytes) {
-		return this->duplicate(bytes);
+	void Desktop::Duplicate(void* output) {
+		if (!this->device) this->initialize();
+
+		this->duplicate(output);
 	}
 
-	HRESULT Desktop::duplicate(std::vector<std::uint8_t>& bytes) {
-		bytes.clear();
+	HRESULT Desktop::SwitchDisplay(std::wstring_view displayName) {
+		this->output = nullptr;
+		DesktopDuplication::OutputByDeviceName(this->direct, displayName, this->output);
 
+		this->deskDupl = nullptr;
+		this->deskDuplDesc = nullptr;
+		HRESULT hr = DesktopDuplication::InitializeOnDevice(this->device, this->output, this->deskDupl, this->deskDuplDesc);
+		if (FAILED(hr)) return hr;
+
+		this->frameDesc = nullptr;
+		this->cpuFrameDesc = nullptr;
+		DesktopDuplication::FormatFrameDescription(this->deskDuplDesc, this->frameDesc, this->cpuFrameDesc);
+		return hr;
+	}
+
+	HRESULT Desktop::initialize() {
+		HRESULT hr = DesktopDuplication::CreateDevice(this->direct, this->output, this->device, this->context);
+		if (FAILED(hr)) return hr;
+
+		hr = DesktopDuplication::InitializeOnDevice(this->device, this->output, this->deskDupl, this->deskDuplDesc);
+		if (FAILED(hr)) return hr;
+
+		DesktopDuplication::FormatFrameDescription(this->deskDuplDesc, this->frameDesc, this->cpuFrameDesc);
+		return hr;
+	}
+
+	HRESULT Desktop::duplicate(void* output) {
 		HRESULT hr = S_OK;
 		std::shared_ptr<DXGI_OUTDUPL_FRAME_INFO> frameInfo;
 		std::shared_ptr<DirectResource> resource;
@@ -220,7 +240,8 @@ namespace YellowRectangleCyanCircle {
 					using namespace std::chrono_literals;
 					std::this_thread::sleep_for(100ns);
 					continue;
-				} else if (FAILED(hr)) break;
+				}
+				else if (FAILED(hr)) break;
 
 				if (frameInfo->LastPresentTime.QuadPart) break;
 			}
@@ -235,14 +256,17 @@ namespace YellowRectangleCyanCircle {
 			}
 
 			hr = DesktopDuplication::InitializeOnDevice(this->device, this->output, this->deskDupl, this->deskDuplDesc);
-			//if (FAILED(hr)) {
-			//	// if (hr == E_ACCESSDENIED) hr = S_OK;
-			//	return hr;
-			//}
 			// Skip this shoot, just return zero frame
 			return hr;
 		}
-		if (hr == DXGI_ERROR_DEVICE_REMOVED) return this->device->GetDeviceRemovedReason();
+		
+		if (hr == DXGI_ERROR_DEVICE_REMOVED) {
+			hr = this->device->GetDeviceRemovedReason();
+			this->uninitialize();
+			return hr;
+		}
+
+		if (!resource) return hr;
 
 		std::shared_ptr<DirectTexture2D> frameCopy = nullptr;
 		hr = this->device->CreateTexture2D(this->frameDesc, frameCopy);
@@ -252,37 +276,40 @@ namespace YellowRectangleCyanCircle {
 		hr = this->device->CreateTexture2D(this->cpuFrameDesc, frameDest);
 		if (FAILED(hr)) return hr;
 
-		if (resource) {
-			std::shared_ptr<DirectTexture2D> desktopImage = nullptr;
-			hr = resource->QueryInterface(desktopImage);
-			if (FAILED(hr)) return hr;
+		std::shared_ptr<DirectTexture2D> desktopImage = nullptr;
+		hr = resource->QueryInterface(desktopImage);
+		if (FAILED(hr)) return hr;
 
-			this->context->CopyTexture(frameCopy, desktopImage);
-			this->context->CopyTexture(frameDest, frameCopy);
+		this->context->CopyTexture(frameCopy, desktopImage);
+		this->context->CopyTexture(frameDest, frameCopy);
 
-			std::shared_ptr<D3D11_MAPPED_SUBRESOURCE> ms;
-			UINT subresource = D3D11CalcSubresource(0, 0, 0);
-			hr = this->context->Map(frameDest, subresource, D3D11_MAP_READ_WRITE, 0, ms);
-			if (FAILED(hr)) return E_FAIL;
+		std::shared_ptr<D3D11_MAPPED_SUBRESOURCE> ms;
+		UINT subresource = D3D11CalcSubresource(0, 0, 0);
+		this->context->Map(frameDest, subresource, D3D11_MAP_READ_WRITE, 0, ms);
 
-			// Width * Height * (B, G, R, A)
-			std::size_t capacity =
-				static_cast<std::size_t>(this->GetWidth()) *
-				static_cast<std::size_t>(this->GetHeight()) *
-				4;
-			bytes.resize(capacity);
-			std::memcpy(
-				std::data(bytes),
-				ms->pData,
-				capacity
-			);
+		// Width * Height * (B, G, R, A)
+		std::size_t capacity =
+			static_cast<std::size_t>(this->GetWidth()) *
+			static_cast<std::size_t>(this->GetHeight()) *
+			4;
+		std::memcpy(
+			output,
+			ms->pData,
+			capacity
+		);
 
-			this->context->Unmap(frameDest, subresource);
-			this->deskDupl->ReleaseFrame();
-		}
+		this->context->Unmap(frameDest, subresource);
+		this->deskDupl->ReleaseFrame();
 
 		return hr;
 	}
 
+	void Desktop::uninitialize() {
+		this->deskDupl = nullptr;
+		this->deskDuplDesc = nullptr;
+
+		this->device = nullptr;
+		this->context = nullptr;
+	}
 
 }

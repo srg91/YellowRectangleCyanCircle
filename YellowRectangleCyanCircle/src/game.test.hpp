@@ -8,6 +8,8 @@
 namespace TestGame {
 	using namespace YellowRectangleCyanCircle;
 
+	using TestWinAPI::MockWinAPI;
+
 	using ::testing::Return;
 
 	namespace Defaults {

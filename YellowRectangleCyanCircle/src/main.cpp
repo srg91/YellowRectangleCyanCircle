@@ -3,10 +3,14 @@
 #include "main.hpp"
 #include "resource.hpp"
 #include "desktop.hpp"
+#include "screen.hpp"
+#include "context.hpp"
+#include "detector.hpp"
 
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <thread>
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -58,97 +62,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
-    
-    // wchar_t gameWindowName[256];
-    // LoadString(hInstance, IDS_GAME_WINDOW_NAME, gameWindowName, 256);
-    std::wstring gameWindowName = L"WindowsProject1234567";
-    
-    using namespace YellowRectangleCyanCircle;
-
-    Desktop desk(std::make_shared<Direct>());
-    
-    using namespace std::chrono_literals;
-    std::this_thread::sleep_for(1s);
-
-    std::vector<std::uint8_t> b;
-    HRESULT hr = desk.Duplicate(b);
-    if (SUCCEEDED(hr)) {
-        std::fstream f("D:\\file.png", std::ios::binary | std::ios::out);
-        f.write(reinterpret_cast<char*>(std::data(b)), std::size(b));
-        f.close();
-    }
-
-    auto winAPI = std::make_shared<WinAPI>();
-
-    auto h = winAPI->FindWindowByName(gameWindowName);
-    auto game = Game(winAPI, gameWindowName, h);
-
-    auto hookCW = Hook(winAPI, EVENT_OBJECT_CREATE, 0, false, true);
-    auto hookDW = Hook(winAPI, EVENT_OBJECT_DESTROY, h, true, false);
-    auto hookMW = Hook(winAPI, EVENT_OBJECT_LOCATIONCHANGE, h, true, true);
-
-    // auto game = Game(winAPI, 
-
-    hookCW.SetCallback([&hookCW, &hookDW, &hookMW, &game, &desk](HWND hWnd, LONG idObject) {
-        game.OnWindowCreated(hWnd);
-        if (game.IsFound()) {
-            OutputDebugString(L"Game found with handle: ");
-            OutputDebugString(std::data(std::to_wstring(reinterpret_cast<std::uint32_t>(hWnd))));
-            OutputDebugString(L"\n");
-
-            hookCW.Disable();
-
-            hookDW.SetHandle(hWnd);
-            hookDW.Enable();
-
-            hookMW.SetHandle(hWnd);
-            hookMW.Enable();
-
-            //using namespace std::chrono_literals;
-            //std::this_thread::sleep_for(1s);
-
-            //std::vector<std::uint8_t> b;
-            //HRESULT hr = desk.Duplicate(b);
-            //if (SUCCEEDED(hr)) {
-            //    std::fstream f("D:\\file.png", std::ios::binary | std::ios::out);
-            //    f.write(reinterpret_cast<char*>(std::data(b)), std::size(b));
-            //    f.close();
-            //}
-        }
-    });
-
-    hookDW.SetCallback([&hookCW, &hookDW, &hookMW, &game](HWND hWnd, LONG idObject) {
-        game.OnWindowDestroyed(hWnd);
-        if (!game.IsFound()) {
-            OutputDebugString(L"Game destroyed\n");
-            hookDW.Disable();
-            hookMW.Disable();
-            hookCW.Enable();
-        }
-    });
-
-    hookMW.SetCallback([&hookMW, &game](HWND hWnd, LONG idObject) {
-        if (idObject == OBJID_CURSOR) return;
-
-        game.OnWindowMoved(hWnd);
-        if (game.IsFound()) {
-            auto rect = game.GetRect();
-
-            std::wstringstream buf;
-            buf << "Game moved: Rect(" << rect.x << ", " << rect.y << ", " << rect.width << ", " << rect.height << ")" << std::endl;
-            OutputDebugString(std::data(buf.str()));
-        }
-    });
-
-    if (game.IsFound()) {
-        hookDW.SetHandle(h);
-        hookMW.SetHandle(h);
-
-        hookDW.Enable();
-        hookMW.Enable();
-    } else {
-        hookCW.Enable();
-    }
 
     MSG msg;
     while (GetMessage(&msg, nullptr, 0, 0))

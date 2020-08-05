@@ -91,7 +91,7 @@ namespace TestHook {
 		EXPECT_TRUE(hook.IsEnabled());
 	}
 
-	bool CallbackTestFunc(std::shared_ptr<MockWinAPI> winAPI, Hook&& hook) {
+	bool CallbackTestFunc(std::shared_ptr<MockWinAPI> winAPI, Hook&& hook, HWND callbackHWnd = Defaults::NonZeroHandle) {
 		WINEVENTPROC staticCallback = nullptr;
 
 		EXPECT_CALL(*winAPI, SetWinEventHook).
@@ -112,7 +112,7 @@ namespace TestHook {
 			staticCallback,
 			Defaults::NonZeroHookHandle,
 			Defaults::EventIdCreate,
-			Defaults::NonZeroHandle,
+			callbackHWnd,
 			0, 0, 0, 0
 		);
 
@@ -152,5 +152,18 @@ namespace TestHook {
 			else
 				EXPECT_FALSE(result);
 		}
+	}
+
+	TEST(TestHook, CallbackStrictHwnd) {
+		auto winAPI = std::make_shared<MockWinAPI>();
+		EXPECT_CALL(*winAPI, UnhookWinEvent).Times(1);
+
+		auto unknownHWnd = reinterpret_cast<HWND>(2);
+		bool result = CallbackTestFunc(
+			winAPI,
+			Hook(winAPI, Defaults::EventIdDestroy, Defaults::NonZeroHandle, true),
+			unknownHWnd
+		);
+		EXPECT_FALSE(result);
 	}
 }

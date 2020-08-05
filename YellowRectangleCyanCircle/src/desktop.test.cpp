@@ -1,26 +1,9 @@
 #include "desktop.test.hpp"
 
-// TODO: FormatFrameDescription?
-// TODO: More tests of EnumAdapters and OutputByDeviceName
 // TODO: Tests for Desktop class
 
 namespace TestDesktop {
 	namespace Defaults {
-		std::shared_ptr<DXGI_OUTDUPL_DESC> FormatDeskDuplDesc(UINT Width, UINT Height, DXGI_MODE_ROTATION Rotation) {
-			auto d = std::make_shared<DXGI_OUTDUPL_DESC>();
-			d->ModeDesc.Width = Width;
-			d->ModeDesc.Height = Height;
-			d->Rotation = Rotation;
-			return d;
-		}
-
-		DXGI_OUTPUT_DESC Defaults::FormatOutputDesc(std::wstring_view deviceName) {
-			DXGI_OUTPUT_DESC d;
-			RtlZeroMemory(&d, sizeof(DXGI_OUTPUT_DESC));
-			wcsncpy_s(d.DeviceName, std::data(deviceName), sizeof(d.DeviceName) / sizeof(wchar_t));
-			return d;
-		}
-
 		CreateDeviceContext::CreateDeviceContext() :
 			Direct(std::make_shared<MockDirect>()),
 			Output(std::make_shared<MockDirectOutput>()),
@@ -44,11 +27,179 @@ namespace TestDesktop {
 			Adapter(std::make_shared<MockDirectAdapter>())
 		{}
 
+		DesktopContext::DesktopContext() :
+			Direct(std::make_shared<MockDirect>()),
+			Output(std::make_shared<MockDirectOutput>()),
+			Adapter(std::make_shared<MockDirectAdapter>()),
+			Factory1(std::make_shared<MockDirectFactory1>()),
+			D11Device(std::make_shared<MockDirect11Device>()),
+			DeviceContext(std::make_shared<MockDirect11DeviceContext>()),
+			Output1(std::make_shared<MockDirectOutput1>()),
+			DeskDupl(std::make_shared<MockDirectOutputDuplication>()),
+			Resource(std::make_shared<MockDirectResource>()),
+			FrameCopy(std::make_shared<DirectTexture2D>()),
+			FrameDest(std::make_shared<DirectTexture2D>()),
+			DesktopImage(std::make_shared<DirectTexture2D>()),
+			Memory(
+				static_cast<std::size_t>(DisplayWidth) * 
+				static_cast<std::size_t>(DisplayHeight) * 
+				4,
+				1
+			)
+		{
+			this->MappedResource = Defaults::FormatMappedResource(this->Memory);
+		}
+
+		DesktopContext::~DesktopContext() {
+			::testing::Mock::VerifyAndClearExpectations(&*this->MappedResource);
+			::testing::Mock::VerifyAndClearExpectations(&*this->DesktopImage);
+			::testing::Mock::VerifyAndClearExpectations(&*this->FrameDest);
+			::testing::Mock::VerifyAndClearExpectations(&*this->FrameCopy);
+			::testing::Mock::VerifyAndClearExpectations(&*this->Resource);
+
+			::testing::Mock::VerifyAndClearExpectations(&*this->DeskDupl);
+			::testing::Mock::VerifyAndClearExpectations(&*this->Output1);
+
+			::testing::Mock::VerifyAndClearExpectations(&*this->DeviceContext);
+			::testing::Mock::VerifyAndClearExpectations(&*this->D11Device);
+
+			::testing::Mock::VerifyAndClearExpectations(&*this->Factory1);
+			::testing::Mock::VerifyAndClearExpectations(&*this->Adapter);
+			::testing::Mock::VerifyAndClearExpectations(&*this->Output);
+
+			::testing::Mock::VerifyAndClearExpectations(&*this->Direct);
+		}
+
 		Dummy::Dummy() :
 			D11Device(nullptr),
 			DeviceContext(nullptr),
-			DeskDuplDesc(nullptr)
+			DeskDuplDesc(nullptr),
+			Memory()
 		{}
+
+		std::shared_ptr<DXGI_OUTDUPL_FRAME_INFO> FormatFrameInfo(LONGLONG lptQuadPart) {
+			auto fi = std::make_shared<DXGI_OUTDUPL_FRAME_INFO>();
+			fi->LastPresentTime.QuadPart = lptQuadPart;
+			return fi;
+		}
+
+		std::shared_ptr<DXGI_OUTDUPL_DESC> FormatDeskDuplDesc(UINT width, UINT height, DXGI_MODE_ROTATION rotation) {
+			auto d = std::make_shared<DXGI_OUTDUPL_DESC>();
+			d->ModeDesc.Width = width;
+			d->ModeDesc.Height = height;
+			d->Rotation = rotation;
+			return d;
+		}
+
+		std::shared_ptr<D3D11_MAPPED_SUBRESOURCE> FormatMappedResource(std::vector<std::uint8_t>& memory) {
+			auto d = std::make_shared<D3D11_MAPPED_SUBRESOURCE>();
+			d->pData = reinterpret_cast<void*>(std::data(memory));
+			return d;
+		}
+
+		DXGI_OUTPUT_DESC Defaults::FormatOutputDesc(std::wstring_view deviceName) {
+			DXGI_OUTPUT_DESC d;
+			RtlZeroMemory(&d, sizeof(DXGI_OUTPUT_DESC));
+			wcsncpy_s(d.DeviceName, std::data(deviceName), sizeof(d.DeviceName) / sizeof(wchar_t));
+			return d;
+		}
+
+		std::shared_ptr<DesktopContext> PrepareDesktopContext() {
+			auto c = std::make_shared<DesktopContext>();
+
+			EXPECT_CALL(*c->Direct, CreateDXGIFactory1).
+				WillRepeatedly(DoAll(
+					SetArgReferee<0>(c->Factory1),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->Factory1, EnumAdapters).
+				WillOnce(DoAll(
+					SetArgReferee<1>(c->Adapter),
+					Return(S_OK)
+				)).
+				WillRepeatedly(Return(DXGI_ERROR_NOT_FOUND));
+
+			EXPECT_CALL(*c->Adapter, EnumOutputs).
+				WillOnce(DoAll(
+					SetArgReferee<1>(c->Output),
+					Return(S_OK)
+				)).
+				WillRepeatedly(Return(DXGI_ERROR_NOT_FOUND));
+
+			EXPECT_CALL(*c->Output, GetDesc).
+				WillRepeatedly(DoAll(
+					SetArgReferee<0>(Defaults::FormatOutputDesc(DisplayName)),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->Direct, D3D11CreateDevice).
+				WillRepeatedly(DoAll(
+					SetArgReferee<5>(c->D11Device),
+					SetArgReferee<7>(c->DeviceContext),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->DeviceContext, SetMultithreadProtected).Times(1);
+
+			EXPECT_CALL(*c->Output, GetParent).
+				WillRepeatedly(DoAll(
+					SetArgReferee<0>(c->Adapter),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->Output, QueryInterface).
+				WillRepeatedly(DoAll(
+					SetArgReferee<0>(c->Output1),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->Output1, DuplicateOutput).
+				WillRepeatedly(DoAll(
+					SetArgReferee<1>(c->DeskDupl),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->DeskDupl, GetDesc).
+				WillRepeatedly(Return(FormatDeskDuplDesc(c->DisplayWidth, c->DisplayHeight)));
+
+			EXPECT_CALL(*c->DeskDupl, ReleaseFrame).Times(2);
+
+			EXPECT_CALL(*c->DeskDupl, AcquireNextFrame).
+				WillOnce(DoAll(
+					SetArgReferee<1>(FormatFrameInfo()),
+					SetArgReferee<2>(c->Resource),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->D11Device, GetDeviceRemovedReason).Times(0);
+
+			EXPECT_CALL(*c->D11Device, CreateTexture2D).
+				WillOnce(DoAll(
+					SetArgReferee<1>(c->FrameCopy),
+					Return(S_OK)
+				)).
+				WillOnce(DoAll(
+					SetArgReferee<1>(c->FrameDest),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->Resource, QueryInterface).
+				WillOnce(DoAll(
+					SetArgReferee<0>(c->DesktopImage),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->DeviceContext, Map(Eq(c->FrameDest), _, _, _, _)).
+				WillOnce(DoAll(
+					SetArgReferee<4>(c->MappedResource),
+					Return(S_OK)
+				));
+
+			EXPECT_CALL(*c->DeviceContext, Unmap(Eq(c->FrameDest), _)).Times(1);
+
+			return c;
+		};
 	}
 
 	TEST(TestDesktopDuplication, CalcDesktopSize) {
@@ -357,6 +508,28 @@ namespace TestDesktop {
 		EXPECT_EQ(hr, E_FAIL);
 	}
 
+	TEST(TestDesktopDuplication, FormatFrameDescription) {
+		auto desc = Defaults::FormatDeskDuplDesc(100, 200);
+
+		std::shared_ptr<D3D11_TEXTURE2D_DESC> frame, cpuFrame;
+		DesktopDuplication::FormatFrameDescription(desc, frame, cpuFrame);
+
+		EXPECT_NE(frame, nullptr);
+		EXPECT_NE(cpuFrame, nullptr);
+
+		EXPECT_EQ(frame->Width, desc->ModeDesc.Width);
+		EXPECT_EQ(frame->Height, desc->ModeDesc.Height);
+		EXPECT_EQ(frame->BindFlags, D3D11_BIND_FLAG::D3D11_BIND_RENDER_TARGET);
+		EXPECT_EQ(frame->CPUAccessFlags, 0);
+		EXPECT_EQ(frame->Usage, D3D11_USAGE_DEFAULT);
+
+		EXPECT_EQ(cpuFrame->Width, desc->ModeDesc.Width);
+		EXPECT_EQ(cpuFrame->Height, desc->ModeDesc.Height);
+		EXPECT_EQ(cpuFrame->BindFlags, 0);
+		EXPECT_EQ(cpuFrame->CPUAccessFlags, D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE);
+		EXPECT_EQ(cpuFrame->Usage, D3D11_USAGE_STAGING);
+	}
+
 	TEST(TestDesktopDuplication, EnumAdapters) {
 		Defaults::EnumAdaptersContext c;
 
@@ -395,7 +568,7 @@ namespace TestDesktop {
 			WillOnce(DoAll(
 				SetArgReferee<0>(
 					Defaults::FormatOutputDesc(L"\\\\.\\DISPLAY1")
-					),
+				),
 				Return(S_OK)
 			)).
 			WillOnce(DoAll(
@@ -452,5 +625,39 @@ namespace TestDesktop {
 		std::shared_ptr<DirectOutput> resultOutput;
 		auto hr = DesktopDuplication::OutputByDeviceName(direct, expectedDeviceName, resultOutput);
 		EXPECT_EQ(resultOutput, expectedOutput);
+	}
+
+	TEST(TestDesktop, DuplicateSuccess) {
+		auto c = Defaults::PrepareDesktopContext();
+		Desktop desktop(c->Direct, Defaults::DisplayName);
+
+		std::shared_ptr<DirectTexture2D> fctFA, fctSA;
+		std::shared_ptr<DirectTexture2D> sctFA, sctSA;
+
+		EXPECT_CALL(*c->DeviceContext, CopyTexture).
+			Times(2).
+			WillOnce(DoAll(
+				SaveArg<0>(&fctFA),
+				SaveArg<1>(&fctSA)
+			)).
+			WillOnce(DoAll(
+				SaveArg<0>(&sctFA),
+				SaveArg<1>(&sctSA)
+			));
+
+		Defaults::Dummy d;
+		d.Memory.resize(
+			static_cast<std::size_t>(desktop.GetWidth()) * 
+			static_cast<std::size_t>(desktop.GetHeight()) *
+			4
+		);
+		desktop.Duplicate(std::data(d.Memory));
+		EXPECT_EQ(d.Memory, c->Memory);
+
+		EXPECT_EQ(fctFA, c->FrameCopy);
+		EXPECT_EQ(fctSA, c->DesktopImage);
+
+		EXPECT_EQ(sctFA, c->FrameDest);
+		EXPECT_EQ(sctSA, c->FrameCopy);
 	}
 }

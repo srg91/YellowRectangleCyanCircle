@@ -8,15 +8,6 @@
 #include <thread>
 
 namespace YellowRectangleCyanCircle {
-	//class InvalidDisplay : public std::exception {
-	//public:
-	//	InvalidDisplay(std::wstring_view displayName);
-
-	//	const char* what() const;
-	//private:
-	//	std::wstring displayName;
-	//};
-
 	namespace DesktopDuplication {
 		const D3D_DRIVER_TYPE DriverTypes[] =
 		{
@@ -71,13 +62,13 @@ namespace YellowRectangleCyanCircle {
 		Desktop(std::shared_ptr<IDirect> direct);
 		Desktop(std::shared_ptr<IDirect> direct, std::wstring_view displayName);
 
-		HRESULT Duplicate(std::vector<std::uint8_t>& bytes);
-
 		std::uint32_t GetWidth() const;
 		std::uint32_t GetHeight() const;
-	protected:
+
+		void Duplicate(void* output);
+		HRESULT SwitchDisplay(std::wstring_view displayName);
+	private:
 		std::shared_ptr<IDirect> direct;
-		// std::wstring displayName;
 
 		std::shared_ptr<Direct11Device> device;
 		std::shared_ptr<Direct11DeviceContext> context;
@@ -88,6 +79,8 @@ namespace YellowRectangleCyanCircle {
 		std::shared_ptr<D3D11_TEXTURE2D_DESC> frameDesc;
 		std::shared_ptr<D3D11_TEXTURE2D_DESC> cpuFrameDesc;
 
-		HRESULT duplicate(std::vector<std::uint8_t>& bytes);
+		HRESULT initialize();
+		HRESULT duplicate(void* output);
+		void uninitialize();
 	};
 }

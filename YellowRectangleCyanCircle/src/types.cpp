@@ -12,3 +12,10 @@ namespace YellowRectangleCyanCircle {
 		}
 	}
 }
+
+namespace std
+{
+	std::uint8_t* data(YellowRectangleCyanCircle::Mat mat) {
+		return mat.data;
+	}
+}

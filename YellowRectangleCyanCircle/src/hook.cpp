@@ -13,6 +13,7 @@ namespace YellowRectangleCyanCircle {
 
 	std::unordered_map<DWORD, Hook*> Hook::instances;
 	std::shared_mutex Hook::instancesMutex;
+	std::unordered_map<DWORD, std::atomic<bool>> Hook::callbackBreaker;
 
 	Hook::Hook(Hook&& other) noexcept {
 		this->isEnabled = other.isEnabled;
@@ -76,11 +77,14 @@ namespace YellowRectangleCyanCircle {
 	}
 
 	void Hook::CallBack(HWND hWnd, LONG idObject, LONG idChild) {
+		if (this->hWndStrict && this->hWnd)
+			if (this->hWnd != hWnd) return;
+
 		if (this->assignToWindow) {
 			auto acc = this->winAPI->AccessibleObjectFromEvent(hWnd, idObject, idChild);
 			if (!(acc && acc->IsWindow())) return;
 		}
-
+		
 		if (this->func) std::invoke(this->func, hWnd, idObject);
 	}
 
@@ -100,6 +104,7 @@ namespace YellowRectangleCyanCircle {
 			throw HookAlreadyRegistered(eventId);
 
 		Hook::instances[eventId] = instance;
+		Hook::callbackBreaker[eventId] = false;
 	}
 
 	void Hook::unregisterInstance(DWORD eventId) {
@@ -108,6 +113,7 @@ namespace YellowRectangleCyanCircle {
 		if (Hook::instances.find(eventId) == Hook::instances.end()) return;
 
 		Hook::instances.erase(eventId);
+		Hook::callbackBreaker[eventId] = false;
 	}
 
 	void Hook::registerCallback() {
@@ -133,10 +139,21 @@ namespace YellowRectangleCyanCircle {
 		DWORD dwmsEventTime
 	) {
 		std::shared_lock lock(Hook::instancesMutex);
+		if (Hook::callbackBreaker[event]) return;
+		Hook::callbackBreaker[event] = true;
+
 		auto instance = Hook::getInstance(event);
 		if (!instance) return;
 
-		instance->CallBack(hWnd, idObject, idChild);
+		try
+		{
+			instance->CallBack(hWnd, idObject, idChild);
+		}
+		catch (...) {
+			Hook::callbackBreaker[event] = false;
+			throw;
+		}
+		Hook::callbackBreaker[event] = false;
 	}
 
 	bool Hook::canBeEnabled() const noexcept {

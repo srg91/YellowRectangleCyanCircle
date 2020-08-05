@@ -1,17 +1,30 @@
 #pragma once
 
-#include "hook.hpp"
+#include "desktop.hpp"
+#include "interface.hpp"
 #include "types.hpp"
+#include "winapi.hpp"
+
+#include <shared_mutex>
 
 namespace YellowRectangleCyanCircle {
-	class Screen : IHookCallbackReceiver {
+	class Screen : public IAction, public IWindowCallbackReceiver {
 	public:
-		std::uint32_t GetWidth() const noexcept;
-		std::uint32_t GetHeight() const noexcept;
+		Screen(
+			std::shared_ptr<IDirect> direct,
+			std::shared_ptr<IWinAPI> winAPI,
+			HWND hWnd = 0
+		);
 
 		void OnWindowMoved(HWND hWnd) override final;
+		void Perform(IContext& context);
 	private:
-		std::uint32_t width = 0;
-		std::uint32_t height = 0;
+		std::shared_ptr<IDirect> direct;
+		std::shared_ptr<IWinAPI> winAPI;
+
+		std::unique_ptr<Desktop> desktop;
+		mutable std::shared_mutex desktopMutex;
+
+		std::wstring currentDisplay;
 	};
 }

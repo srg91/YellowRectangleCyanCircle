@@ -70,4 +70,18 @@ namespace YellowRectangleCyanCircle {
 			return nullptr;
 		}
 	}
+
+	std::wstring WinAPI::GetApplicationDisplayName(HWND hWnd) const {
+		if (!hWnd) return L"";
+
+		HMONITOR m = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+		MONITORINFOEX mi;
+		mi.cbSize = sizeof(mi);
+
+		if (GetMonitorInfo(m, &mi))
+			return mi.szDevice;
+		else
+			return L"";
+	}
+
 }
