@@ -3,7 +3,7 @@
 namespace YellowRectangleCyanCircle {
     Controller::Controller(HWND hWnd, std::wstring_view gameWindowName) :
         hWnd(hWnd),
-        timerInterval(1000),
+        timerInterval(333),
         gameWindowName(gameWindowName)
     {
         this->initializeContext();
@@ -63,6 +63,8 @@ namespace YellowRectangleCyanCircle {
             auto timerStart = std::chrono::high_resolution_clock::now();
 
             try {
+                this->context->ClearOnTick();
+
                 for (auto& action : this->actions) {
                     action->Perform(this->context);
                 }

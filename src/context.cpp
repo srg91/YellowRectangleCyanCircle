@@ -2,6 +2,7 @@
 
 namespace YellowRectangleCyanCircle {
     Context::Context() :
+        currentDetector(DetectorType::None),
         windowHandle(0)
     {
         this->KeypadClearEmptyRunCounter();
@@ -19,6 +20,8 @@ namespace YellowRectangleCyanCircle {
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->shapesChanged[dt] = false;
         }
+        this->workingArea = Rect::Rect();
+        this->currentDetector = DetectorType::None;
     };
 
     bool Context::IsGameFound() const {
@@ -58,6 +61,16 @@ namespace YellowRectangleCyanCircle {
     void Context::SetDetectorEnabled(DetectorType dt, bool value) {
         auto lock = this->lockOnWrite();
         this->detectorStates[dt] = value;
+    }
+
+    DetectorType Context::GetCurrentDetector() const {
+        auto lock = this->lockOnRead();
+        return this->currentDetector;
+    };
+
+    void Context::SetCurrentDetector(DetectorType dt) {
+        auto lock = this->lockOnWrite();
+        this->currentDetector = dt;
     }
 
     unsigned int Context::KeypadGetEmptyRunCounter() const {

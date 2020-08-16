@@ -8,8 +8,6 @@ namespace YellowRectangleCyanCircle {
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
-        context->SetWorkingArea(Rect::Rect());
-
         auto image = Mat(context->GetScreenImage()).clone();
 
         cv::blur(image, image, cv::Size(2, 4), cv::Point(0, 0));
@@ -102,6 +100,7 @@ namespace YellowRectangleCyanCircle {
         }
 
         if (isKeypadEnabled && !keypadRect.empty()) {
+            context->SetCurrentDetector(DetectorType::Keypad);
             context->SetWorkingArea(keypadRect);
 
             Mat res;
@@ -109,6 +108,7 @@ namespace YellowRectangleCyanCircle {
             cv::rectangle(res, keypadRect, cv::Scalar(0, 0, 255), 2);
         }
         else if (isFingerprintEnabled && !(fpRect.empty() || fppRect.empty())) {
+            context->SetCurrentDetector(DetectorType::Fingerprint);
             context->SetWorkingArea(cv::Rect(
                 cv::Point(fppRect.x, fpRect.y),
                 cv::Point(fpRect.br().x, fppRect.br().y)
@@ -125,6 +125,7 @@ namespace YellowRectangleCyanCircle {
 
     void FingerprintDetector::Perform(std::shared_ptr<IContext> context) {
         if (!context->IsDetectorEnabled(this->type)) return;
+        if (context->GetCurrentDetector() != this->type) return;
         if (context->GetWorkingArea().empty()) return;
         if (std::size(context->GetShapes(this->type)) > 0) return;
 
@@ -209,6 +210,7 @@ namespace YellowRectangleCyanCircle {
 
     void KeypadDetector::Perform(std::shared_ptr<IContext> context) {
         if (!context->IsDetectorEnabled(this->type)) return;
+        if (context->GetCurrentDetector() != this->type) return;
         if (context->GetWorkingArea().empty()) return;
         if (std::size(context->GetShapes(this->type)) > 0) return;
 

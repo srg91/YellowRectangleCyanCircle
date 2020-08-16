@@ -32,6 +32,9 @@ namespace YellowRectangleCyanCircle {
         virtual bool IsDetectorEnabled(DetectorType dt) const = 0;
         virtual void SetDetectorEnabled(DetectorType dt, bool value) = 0;
 
+        virtual DetectorType GetCurrentDetector() const = 0;
+        virtual void SetCurrentDetector(DetectorType dt) = 0;
+
         virtual const Rect::Rect& GetWorkingArea() const = 0;
         virtual void SetWorkingArea(const Rect::Rect& value) = 0;
         virtual const Rect::Rect& GetPreviousWorkingArea() const = 0;

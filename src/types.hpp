@@ -13,6 +13,7 @@
 
 namespace YellowRectangleCyanCircle {
     enum class DetectorType {
+        None,
         Area,
         Fingerprint,
         Keypad

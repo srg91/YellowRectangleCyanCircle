@@ -25,6 +25,9 @@ namespace YellowRectangleCyanCircle {
         bool IsDetectorEnabled(DetectorType dt) const override final;
         void SetDetectorEnabled(DetectorType dt, bool value) override final;
 
+        DetectorType GetCurrentDetector() const override final;
+        void SetCurrentDetector(DetectorType dt) override final;
+
         const Rect::Rect& GetWorkingArea() const override final;
         void SetWorkingArea(const Rect::Rect& value) override final;
         const Rect::Rect& GetPreviousWorkingArea() const override final;
@@ -65,6 +68,7 @@ namespace YellowRectangleCyanCircle {
         unsigned int keypadEmptyRunCounter = 0;
         std::vector<std::shared_ptr<IShape>> keypadShapesCache;
 
+        DetectorType currentDetector;
         Rect::Rect workingArea;
         Rect::Rect prevWorkingArea;
 

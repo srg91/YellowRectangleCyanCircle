@@ -16,8 +16,7 @@ namespace YellowRectangleCyanCircle {
         this->createNotifyIconMenu();
         this->createFactory();
 
-        // this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
-        this->controller = std::make_shared<Controller>(this->hWnd, L"Lister");
+        this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
     }
 
     Application::~Application() {
@@ -342,7 +341,6 @@ namespace YellowRectangleCyanCircle {
         for (auto& c : name) {
             c ^= 1;
         }
-        // return name;
-        return L"WindowsProject1234567";
+        return name;
     }
 }
