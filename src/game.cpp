@@ -1,11 +1,15 @@
 #include "game.hpp"
 
 namespace YellowRectangleCyanCircle {
-    Game::Game(const std::wstring_view windowTitle, HWND hWnd, Rect::Rect rect) :
+    Game::Game(const std::wstring_view windowTitle, HWND hWnd) :
         hWnd(hWnd),
-        rect(rect),
+        rect(Rect::Rect()),
         windowTitle(windowTitle)
-    {}
+    {
+        if (this->hWnd) {
+            this->rect = WinAPI::GetWindowRect(this->hWnd);
+        }
+    }
 
     bool Game::IsFound() const noexcept {
         std::shared_lock lock(this->mutex);
@@ -21,7 +25,7 @@ namespace YellowRectangleCyanCircle {
         if (this->IsFound()) return;
 
         std::wstring title = WinAPI::GetWindowText_(hWnd);
-        if (title == this->windowTitle) {
+        if (title.find(this->windowTitle) != std::string::npos) {
             std::unique_lock lock(this->mutex);
             this->hWnd = hWnd;
             this->rect = WinAPI::GetWindowRect(this->hWnd);

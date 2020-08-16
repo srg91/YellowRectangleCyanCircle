@@ -53,5 +53,6 @@ namespace YellowRectangleCyanCircle {
         HRESULT initializeResources();
 
         std::shared_ptr<Controller> controller;
+        std::wstring loadGameWindowName();
     };
 }

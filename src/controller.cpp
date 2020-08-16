@@ -1,9 +1,10 @@
 #include "controller.hpp"
 
 namespace YellowRectangleCyanCircle {
-    Controller::Controller(HWND hWnd) :
+    Controller::Controller(HWND hWnd, std::wstring_view gameWindowName) :
         hWnd(hWnd),
-        timerInterval(1000)
+        timerInterval(1000),
+        gameWindowName(gameWindowName)
     {
         this->initializeContext();
 
@@ -11,13 +12,21 @@ namespace YellowRectangleCyanCircle {
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->EnableDetector(dt, false);
         }
+
+        HWND gameHWnd = 0;
+        if (!gameWindowName.empty()) {
+            gameHWnd = ::FindWindow(nullptr, std::data(this->gameWindowName));
+        }
+        this->initializeActions(gameHWnd);
+        this->initializeHooks(gameHWnd);
     }
 
     Controller::~Controller() {
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->EnableDetector(dt, false);
         }
-        if (this->context) this->context = nullptr;
+        this->context = nullptr;
+        this->clearHooks();
     }
 
     bool Controller::IsDetectorEnabled(DetectorType dt) {
@@ -80,4 +89,76 @@ namespace YellowRectangleCyanCircle {
             this->timer = std::thread([this]() { this->onTimer(); });
         }
     };
+
+    void Controller::initializeActions(HWND gameHWnd) {
+        this->game = std::make_shared<Game>(this->gameWindowName, gameHWnd);
+        this->screen = std::make_shared<Screen>(std::make_shared<Direct>(), gameHWnd);
+    }
+
+    void Controller::initializeHooks(HWND gameHWnd) {
+        this->hookCreateWindow = std::make_shared<Hook>(EVENT_OBJECT_CREATE);
+        this->hookCreateWindow->SetCallback([this](HWND hWnd, LONG idObject) { this->onCreateWindow(hWnd, idObject); });
+
+        this->hookDestroyWindow = std::make_shared<Hook>(EVENT_OBJECT_DESTROY, gameHWnd, true, false);
+        this->hookDestroyWindow->SetCallback([this](HWND hWnd, LONG idObject) { this->onDestroyWindow(hWnd, idObject); });
+
+        this->hookMoveWindow = std::make_shared<Hook>(EVENT_OBJECT_LOCATIONCHANGE, gameHWnd, true, true);
+        this->hookMoveWindow->SetCallback([this](HWND hWnd, LONG idObject) { this->onMoveWindow(hWnd, idObject); });
+
+        if (gameHWnd) {
+            this->hookCreateWindow->Disable();
+            this->hookDestroyWindow->Enable();
+            this->hookMoveWindow->Enable();
+        }
+        else {
+            this->hookDestroyWindow->Disable();
+            this->hookMoveWindow->Disable();
+            this->hookCreateWindow->Enable();
+        }
+    }
+
+    void Controller::clearHooks() {
+        this->hookCreateWindow = nullptr;
+        this->hookDestroyWindow = nullptr;
+        this->hookMoveWindow = nullptr;
+    }
+
+    void Controller::onCreateWindow(HWND hWnd, LONG idObject) {
+        if (!this->game) return;
+
+        this->game->OnWindowCreated(hWnd);
+        if (this->game->IsFound()) {
+            this->game->OnWindowMoved(hWnd);
+
+            this->hookDestroyWindow->SetHandle(hWnd);
+            this->hookMoveWindow->SetHandle(hWnd);
+
+            this->hookCreateWindow->Disable();
+            this->hookDestroyWindow->Enable();
+            this->hookMoveWindow->Enable();
+        }
+    }
+
+    void Controller::onDestroyWindow(HWND hWnd, LONG idObject) {
+        if (this->game && this->game->IsFound()) {
+            this->game->OnWindowDestroyed(hWnd);
+        }
+
+        this->hookDestroyWindow->Disable();
+        this->hookMoveWindow->Disable();
+        this->hookCreateWindow->Enable();
+    }
+
+    void Controller::onMoveWindow(HWND hWnd, LONG idObject) {
+        // Skip unnecessary events
+        if (idObject == OBJID_CURSOR) return;
+
+        if (this->game && this->game->IsFound()) {
+            auto prevRect = this->game->GetRect();
+            this->game->OnWindowMoved(hWnd);
+            auto newRect = this->game->GetRect();
+
+            if (this->screen && prevRect != newRect) this->screen->OnWindowMoved(hWnd);
+        }
+    }
 }

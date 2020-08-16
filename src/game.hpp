@@ -13,7 +13,7 @@ namespace YellowRectangleCyanCircle {
         bool IsFound() const noexcept;
         Rect::Rect GetRect() const noexcept;
 
-        Game(const std::wstring_view windowTitle, HWND hWnd = 0, Rect::Rect rect = Rect::Rect());
+        Game(const std::wstring_view windowTitle, HWND hWnd = 0);
 
         void OnWindowCreated(HWND hWnd) override final;
         void OnWindowDestroyed(HWND hWnd) override final;

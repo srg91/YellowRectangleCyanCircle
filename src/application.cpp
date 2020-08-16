@@ -16,7 +16,7 @@ namespace YellowRectangleCyanCircle {
         this->createNotifyIconMenu();
         this->createFactory();
 
-        this->controller = std::make_shared<Controller>(this->hWnd);
+        this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
     }
 
     Application::~Application() {
@@ -138,7 +138,7 @@ namespace YellowRectangleCyanCircle {
     void Application::createWindow(std::wstring_view className) {
         this->hWnd = ::CreateWindowEx(
             // WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
-            WS_EX_TOPMOST | WS_EX_LAYERED,
+            WS_EX_LAYERED,
             std::data(className),
             L"",
             // WS_POPUP,
@@ -331,5 +331,17 @@ namespace YellowRectangleCyanCircle {
             &this->brushYellow
         );
         return hr;
+    }
+
+    std::wstring Application::loadGameWindowName() {
+        wchar_t buf[128];
+        ::LoadString(this->hInstance, IDS_GAME_WINDOW_NAME, buf, sizeof(buf) / sizeof(wchar_t));
+
+        std::wstring name(buf);
+        for (auto& c : name) {
+            c ^= 1;
+        }
+        // return name;
+        return L"WindowsProject1234567";
     }
 }
