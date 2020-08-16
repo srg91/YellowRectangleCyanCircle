@@ -16,7 +16,7 @@ namespace YellowRectangleCyanCircle {
         this->createNotifyIconMenu();
         this->createFactory();
 
-        this->controller = std::make_shared<Controller>();
+        this->controller = std::make_shared<Controller>(this->hWnd);
     }
 
     Application::~Application() {

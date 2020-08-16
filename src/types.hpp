@@ -25,6 +25,30 @@ namespace YellowRectangleCyanCircle {
 
         Rect FromRECT(const RECT& rect);
     }
+
+    template <class T>
+    class ComObject {
+    public:
+        ComObject() :
+            ComObject<T>(nullptr)
+        {}
+
+        ComObject(CComPtr<T> object) :
+            object(object)
+        {}
+
+        CComPtr<T> Get() const {
+            return this->object;
+        }
+
+        void Set(CComPtr<T> value) {
+            this->object = value;
+        }
+
+        operator bool() const { return bool(this->object); };
+    protected:
+        CComPtr<T> object;
+    };
 }
 
 namespace std {

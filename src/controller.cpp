@@ -1,11 +1,12 @@
 #include "controller.hpp"
-#include "shapes.hpp"
 
 namespace YellowRectangleCyanCircle {
-    Controller::Controller() :
-        context(std::make_shared<Context>()),
+    Controller::Controller(HWND hWnd) :
+        hWnd(hWnd),
         timerInterval(1000)
     {
+        this->initializeContext();
+
         this->EnableDetector(DetectorType::Area, true);
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->EnableDetector(dt, false);
@@ -45,6 +46,11 @@ namespace YellowRectangleCyanCircle {
         }
     }
 
+    void Controller::initializeContext() {
+        this->context = std::make_shared<Context>();
+        this->context->SetWindowHandle(this->hWnd);
+    }
+
     bool Controller::isAnyDetectorEnabled() {
         // Area is not real detector
         return this->IsDetectorEnabled(DetectorType::Fingerprint) || this->IsDetectorEnabled(DetectorType::Keypad);
@@ -71,7 +77,8 @@ namespace YellowRectangleCyanCircle {
         if (!shouldEnable && timerEnabled) {
             this->timer.join();
             // Clear context (thread-safe, cause we already stopped thread)
-            this->context = std::make_shared<Context>();
+            this->context = nullptr;
+            this->initializeContext();
         }
         else if (shouldEnable && !timerEnabled) {
             this->timer = std::thread([this]() { this->onTimer(); });

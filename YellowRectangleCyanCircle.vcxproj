@@ -146,8 +146,11 @@
     <ClCompile Include="src\application.cpp" />
     <ClCompile Include="src\context.cpp" />
     <ClCompile Include="src\controller.cpp" />
+    <ClCompile Include="src\desktop.cpp" />
+    <ClCompile Include="src\direct.cpp" />
     <ClCompile Include="src\exception.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\screen.cpp" />
     <ClCompile Include="src\shapes.cpp" />
     <ClCompile Include="src\types.cpp" />
     <ClCompile Include="src\utils.cpp" />
@@ -157,10 +160,13 @@
     <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\context.hpp" />
     <ClInclude Include="src\controller.hpp" />
+    <ClInclude Include="src\desktop.hpp" />
+    <ClInclude Include="src\direct.hpp" />
     <ClInclude Include="src\exception.hpp" />
     <ClInclude Include="src\interface.hpp" />
     <ClInclude Include="src\main.hpp" />
     <ClInclude Include="src\resource.hpp" />
+    <ClInclude Include="src\screen.hpp" />
     <ClInclude Include="src\shapes.hpp" />
     <ClInclude Include="src\types.hpp" />
     <ClInclude Include="src\utils.hpp" />

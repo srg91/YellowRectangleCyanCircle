@@ -9,4 +9,5 @@
 namespace YellowRectangleCyanCircle {
     Rect::Rect GetClientRect(HWND hWnd);
     Rect::Rect GetWindowRect(HWND hWnd);
+    std::wstring GetWindowDisplayName(HWND hWnd);
 }

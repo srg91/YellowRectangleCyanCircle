@@ -8,7 +8,7 @@
 namespace YellowRectangleCyanCircle {
     class Controller {
     public:
-        Controller();
+        Controller(HWND hWnd);
         ~Controller();
 
         bool IsDetectorEnabled(DetectorType dt);
@@ -16,10 +16,13 @@ namespace YellowRectangleCyanCircle {
 
         void DrawShapes(DetectorType dt, CComPtr<ID2D1HwndRenderTarget> target, CComPtr<ID2D1SolidColorBrush> brush);
     private:
+        HWND hWnd;
+
         std::shared_ptr<Context> context;
         std::chrono::milliseconds timerInterval;
         std::thread timer;
 
+        void initializeContext();
         bool isAnyDetectorEnabled();
         void onTimer();
         void updateTimer();
