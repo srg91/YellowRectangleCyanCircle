@@ -144,6 +144,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\application.cpp" />
+    <ClCompile Include="src\context.cpp" />
     <ClCompile Include="src\controller.cpp" />
     <ClCompile Include="src\exception.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -152,8 +153,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp" />
+    <ClInclude Include="src\context.hpp" />
     <ClInclude Include="src\controller.hpp" />
     <ClInclude Include="src\exception.hpp" />
+    <ClInclude Include="src\interface.hpp" />
     <ClInclude Include="src\main.hpp" />
     <ClInclude Include="src\resource.hpp" />
     <ClInclude Include="src\types.hpp" />

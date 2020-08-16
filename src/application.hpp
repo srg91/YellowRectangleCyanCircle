@@ -32,8 +32,9 @@ namespace YellowRectangleCyanCircle {
         void createNotifyIconMenu();
         void createWindow(std::wstring_view className);
         void destroyNotifyIcon();
+        void notifyIconMenuCheck(int itemID, bool value);
+        void notifyIconMenuShow();
         void registerWindowClass(std::wstring_view className) const;
-        void showNotifyIconMenu();
         static LRESULT CALLBACK wndProc(
             HWND hWnd,
             UINT message,

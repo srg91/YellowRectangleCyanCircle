@@ -1,5 +1,10 @@
 #pragma once
 
+#pragma comment(lib, "d2d1.lib")
+
+#include <atlbase.h>
+#include <d2d1.h>
+#include <d2d1helper.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>

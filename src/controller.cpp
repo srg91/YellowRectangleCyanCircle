@@ -2,6 +2,7 @@
 
 namespace YellowRectangleCyanCircle {
     Controller::Controller() :
+        context(std::make_shared<Context>()),
         timerInterval(1000)
     {
         this->EnableDetector(DetectorType::Area, true);
@@ -14,14 +15,22 @@ namespace YellowRectangleCyanCircle {
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->EnableDetector(dt, false);
         }
+        if (this->context) this->context = nullptr;
     }
 
     bool Controller::IsDetectorEnabled(DetectorType dt) {
-        return this->m[dt];
+        if (!this->context) return false;
+        auto lock = this->context->LockOnRead();
+        return this->context->IsDetectorEnabled(dt);
     }
 
     void Controller::EnableDetector(DetectorType dt, bool value) {
-        this->m[dt] = value;
+        if (!this->context) return;
+
+        {
+            auto lock = this->context->LockOnWrite();
+            this->context->SetDetectorEnabled(dt, value);
+        }
         this->updateTimer();
     }
 
@@ -32,18 +41,15 @@ namespace YellowRectangleCyanCircle {
 
     void Controller::onTimer() {
         while (this->isAnyDetectorEnabled()) {
-            auto start = std::chrono::high_resolution_clock::now();
+            auto timerStart = std::chrono::high_resolution_clock::now();
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(900ms);
             OutputDebugString(L"OnTimer tick\n");
-            auto end = std::chrono::high_resolution_clock::now();
+            auto timerEnd = std::chrono::high_resolution_clock::now();
 
-            if (end - start > this->timerInterval) continue;
-            auto d = this->timerInterval - (end - start);
-            std::wstringstream s;
-            s << "Waiting for " << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << " ms" << std::endl;
-            OutputDebugString(std::data(s.str()));
-            std::this_thread::sleep_for(this->timerInterval - (end - start));
+            auto duration = timerEnd - timerStart;
+            if (duration > this->timerInterval) continue;
+            std::this_thread::sleep_for(this->timerInterval - duration);
         }
     }
 
@@ -53,8 +59,8 @@ namespace YellowRectangleCyanCircle {
 
         if (!shouldEnable && timerEnabled) {
             this->timer.join();
-            // TODO: Clear
-            // TODO: invalidate rect in application
+            // Clear context (thread-safe, cause we already stopped thread)
+            this->context = std::make_shared<Context>();
         }
         else if (shouldEnable && !timerEnabled) {
             this->timer = std::thread([this]() { this->onTimer(); });

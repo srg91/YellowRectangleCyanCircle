@@ -1,11 +1,9 @@
 #pragma once
 
-#include "types.hpp"
+#include "context.hpp"
 
 #include <chrono>
 #include <thread>
-#include <unordered_map>
-#include <vector>
 
 namespace YellowRectangleCyanCircle {
     class Controller {
@@ -16,9 +14,7 @@ namespace YellowRectangleCyanCircle {
         bool IsDetectorEnabled(DetectorType dt);
         void EnableDetector(DetectorType dt, bool value);
     private:
-        // TODO: rework
-        std::unordered_map<DetectorType, bool> m;
-
+        std::shared_ptr<Context> context;
         std::chrono::milliseconds timerInterval;
         std::thread timer;
 

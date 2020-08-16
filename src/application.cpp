@@ -16,7 +16,6 @@ namespace YellowRectangleCyanCircle {
         this->createNotifyIconMenu();
 
         this->controller = std::make_shared<Controller>();
-        this->controller->EnableDetector(DetectorType::Fingerprint, true);
     }
 
     Application::~Application() {
@@ -36,7 +35,12 @@ namespace YellowRectangleCyanCircle {
         case IDM_FINGERPRINTSCANNER:
         case IDM_KEYPADCRACKER:
         {
-            OutputDebugString(L"Some of button clicked!\n");
+            if (!this->controller) break;
+
+            auto dt = (commandID == IDM_FINGERPRINTSCANNER) ? DetectorType::Fingerprint : DetectorType::Keypad;
+            bool enabled = !this->controller->IsDetectorEnabled(dt);
+            this->notifyIconMenuCheck(commandID, enabled);
+            this->controller->EnableDetector(dt, enabled);
         }
         break;
         }
@@ -50,7 +54,7 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::OnNotifyIconRightClick() {
-        this->showNotifyIconMenu();
+        this->notifyIconMenuShow();
     }
 
     int Application::RunMessageLoop() {
@@ -123,6 +127,28 @@ namespace YellowRectangleCyanCircle {
         ::Shell_NotifyIcon(NIM_DELETE, &this->notifyIcon);
     }
 
+    void Application::notifyIconMenuCheck(int itemID, bool value) {
+        ::CheckMenuItem(this->notifyIconMenu, itemID, value ? MF_CHECKED : MF_UNCHECKED);
+    }
+
+    void Application::notifyIconMenuShow() {
+        if (!this->hWnd) return;
+
+        POINT pt;
+        ::GetCursorPos(&pt);
+
+        ::SetForegroundWindow(this->hWnd);
+        ::TrackPopupMenu(
+            this->notifyIconMenu,
+            TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_LEFTBUTTON,
+            pt.x,
+            pt.y,
+            0,
+            this->hWnd,
+            nullptr
+        );
+    }
+
     void Application::registerWindowClass(std::wstring_view className) const {
         WNDCLASSEXW wcex;
         ::RtlZeroMemory(&wcex, sizeof(WNDCLASSEXW));
@@ -142,24 +168,6 @@ namespace YellowRectangleCyanCircle {
         if (!::RegisterClassEx(&wcex)) {
             throw UnableToRegisterWindowClass();
         }
-    }
-
-    void Application::showNotifyIconMenu() {
-        if (!this->hWnd) return;
-
-        POINT pt;
-        ::GetCursorPos(&pt);
-
-        ::SetForegroundWindow(this->hWnd);
-        ::TrackPopupMenu(
-            this->notifyIconMenu,
-            TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_LEFTBUTTON,
-            pt.x,
-            pt.y,
-            0,
-            this->hWnd,
-            nullptr
-        );
     }
 
     LRESULT CALLBACK Application::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
