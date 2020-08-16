@@ -1,7 +1,6 @@
 #pragma once
+#include "types.hpp"
 #include "utils.hpp"
-
-#include <Windows.h>
 
 #include <exception>
 #include <string>

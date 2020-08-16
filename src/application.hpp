@@ -1,10 +1,11 @@
 #pragma once
 
+#include "controller.hpp"
 #include "exception.hpp"
 #include "resource.hpp"
+#include "types.hpp"
 
-#include <Windows.h>
-
+#include <memory>
 #include <string>
 
 namespace YellowRectangleCyanCircle {
@@ -24,6 +25,8 @@ namespace YellowRectangleCyanCircle {
         HWND hWnd;
         NOTIFYICONDATA notifyIcon;
         HMENU notifyIconMenu;
+
+        std::shared_ptr<Controller> controller;
 
         void createNotifyIcon();
         void createNotifyIconMenu();

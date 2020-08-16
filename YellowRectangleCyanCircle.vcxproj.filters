@@ -27,6 +27,12 @@
     <ClCompile Include="src\exception.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\types.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\main.hpp">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\exception.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

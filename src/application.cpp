@@ -14,9 +14,14 @@ namespace YellowRectangleCyanCircle {
         this->createWindow(className);
         this->createNotifyIcon();
         this->createNotifyIconMenu();
+
+        this->controller = std::make_shared<Controller>();
+        this->controller->EnableDetector(DetectorType::Fingerprint, true);
     }
 
     Application::~Application() {
+        if (this->controller) this->controller = nullptr;
+
         ::CoUninitialize();
     }
 
@@ -38,6 +43,7 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::OnDestroy() {
+        if (this->controller) this->controller = nullptr;
         this->destroyNotifyIcon();
 
         ::PostQuitMessage(0);
