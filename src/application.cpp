@@ -16,7 +16,8 @@ namespace YellowRectangleCyanCircle {
         this->createNotifyIconMenu();
         this->createFactory();
 
-        this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
+        // this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
+        this->controller = std::make_shared<Controller>(this->hWnd, L"Lister");
     }
 
     Application::~Application() {
@@ -137,20 +138,20 @@ namespace YellowRectangleCyanCircle {
 
     void Application::createWindow(std::wstring_view className) {
         this->hWnd = ::CreateWindowEx(
-            // WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
-            WS_EX_LAYERED,
+            WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
+            //WS_EX_LAYERED,
             std::data(className),
             L"",
-            // WS_POPUP,
-            // 0,
-            // 0,
-            // 0,
-            // 0
-            WS_OVERLAPPEDWINDOW,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
+            WS_POPUP,
+            0,
+            0,
+            0,
+            0,
+            //WS_OVERLAPPEDWINDOW,
+            //CW_USEDEFAULT,
+            //CW_USEDEFAULT,
+            //CW_USEDEFAULT,
+            //CW_USEDEFAULT,
             nullptr,
             nullptr,
             this->hInstance,

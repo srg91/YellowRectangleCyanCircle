@@ -1,4 +1,5 @@
 #include "detector.hpp"
+#include <opencv2/imgcodecs.hpp>
 
 namespace YellowRectangleCyanCircle {
     void AreaDetector::Perform(std::shared_ptr<IContext> context) {
@@ -9,6 +10,13 @@ namespace YellowRectangleCyanCircle {
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
         auto image = Mat(context->GetScreenImage()).clone();
+        context->SetWorkingArea(Rect::Rect());
+
+        auto now = std::chrono::system_clock::now();
+        std::stringstream buf;
+        buf << "D:\\file-" << std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() << ".png";
+        cv::imwrite(std::data(buf.str()), image);
+
         cv::blur(image, image, cv::Size(2, 4), cv::Point(0, 0));
         cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
 

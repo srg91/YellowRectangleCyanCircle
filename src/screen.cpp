@@ -32,7 +32,7 @@ namespace YellowRectangleCyanCircle {
         if (context->IsGameFound())
         {
             auto gameRect = context->GetGameRect();
-            cv::resize(mat, mat, cv::Size(gameRect.width, gameRect.height));
+            mat = mat(gameRect);
         }
 
         cv::cvtColor(mat, mat, cv::COLOR_BGRA2GRAY);

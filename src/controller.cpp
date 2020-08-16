@@ -8,11 +8,6 @@ namespace YellowRectangleCyanCircle {
     {
         this->initializeContext();
 
-        this->EnableDetector(DetectorType::Area, true);
-        for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
-            this->EnableDetector(dt, false);
-        }
-
         HWND gameHWnd = 0;
         if (!std::empty(gameWindowName)) {
             gameHWnd = ::FindWindow(nullptr, std::data(this->gameWindowName));
@@ -55,6 +50,10 @@ namespace YellowRectangleCyanCircle {
     void Controller::initializeContext() {
         this->context = std::make_shared<Context>();
         this->context->SetWindowHandle(this->hWnd);
+        this->EnableDetector(DetectorType::Area, true);
+        for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
+            this->EnableDetector(dt, false);
+        }
     }
 
     bool Controller::isAnyDetectorEnabled() {
