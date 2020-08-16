@@ -6,10 +6,18 @@
 #include <string>
 
 namespace YellowRectangleCyanCircle {
+    class COMException : public std::exception {
+    public:
+        COMException(HRESULT hr);
+        const char* what() const throw() override;
+    private:
+        std::string message;
+    };
+
     class WindowsException : public std::exception {
     public:
         WindowsException();
-        const char* what() const throw () override;
+        const char* what() const throw() override;
     private:
         std::string message;
     };

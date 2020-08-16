@@ -4,6 +4,7 @@
 #include "exception.hpp"
 #include "resource.hpp"
 #include "types.hpp"
+#include "winapi.hpp"
 
 #include <memory>
 #include <string>
@@ -16,17 +17,17 @@ namespace YellowRectangleCyanCircle {
 
         void OnCommand(int commandID);
         void OnDestroy();
+        void OnDisplayChange();
         void OnNotifyIconRightClick();
+        void OnResize(UINT width, UINT height);
+        void OnPaint();
 
         int RunMessageLoop();
-
     private:
         HINSTANCE hInstance;
         HWND hWnd;
         NOTIFYICONDATA notifyIcon;
         HMENU notifyIconMenu;
-
-        std::shared_ptr<Controller> controller;
 
         void createNotifyIcon();
         void createNotifyIconMenu();
@@ -41,5 +42,16 @@ namespace YellowRectangleCyanCircle {
             WPARAM wParam,
             LPARAM lParam
         );
+
+        CComPtr<ID2D1Factory> factory;
+        CComPtr<ID2D1HwndRenderTarget> renderTarget;
+        CComPtr<ID2D1SolidColorBrush> brushCyan;
+        CComPtr<ID2D1SolidColorBrush> brushYellow;
+
+        void clearResources();
+        void createFactory();
+        HRESULT initializeResources();
+
+        std::shared_ptr<Controller> controller;
     };
 }

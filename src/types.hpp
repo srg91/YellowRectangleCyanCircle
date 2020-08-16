@@ -3,6 +3,7 @@
 #pragma comment(lib, "d2d1.lib")
 
 #include <atlbase.h>
+#include <comdef.h>
 #include <d2d1.h>
 #include <d2d1helper.h>
 #include <opencv2/core/mat.hpp>

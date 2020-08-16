@@ -14,6 +14,7 @@ namespace YellowRectangleCyanCircle {
         this->createWindow(className);
         this->createNotifyIcon();
         this->createNotifyIconMenu();
+        this->createFactory();
 
         this->controller = std::make_shared<Controller>();
     }
@@ -49,12 +50,57 @@ namespace YellowRectangleCyanCircle {
     void Application::OnDestroy() {
         if (this->controller) this->controller = nullptr;
         this->destroyNotifyIcon();
+        this->clearResources();
 
         ::PostQuitMessage(0);
     }
 
+    void Application::OnDisplayChange() {
+        if (!this->hWnd) return;
+        ::InvalidateRect(this->hWnd, nullptr, false);
+    }
+
     void Application::OnNotifyIconRightClick() {
         this->notifyIconMenuShow();
+    }
+
+    void Application::OnResize(UINT width, UINT height) {
+        if (!this->hWnd) return;
+        if (!this->renderTarget) return;
+
+        this->renderTarget->Resize(D2D1::SizeU(width, height));
+    }
+
+    void Application::OnPaint() {
+        if (!this->hWnd) return;
+
+        HRESULT hr = this->initializeResources();
+        if (FAILED(hr)) {
+            if (hr == D2DERR_RECREATE_TARGET) {
+                this->clearResources();
+            }
+            // throw exception?
+            return;
+        }
+
+        if (!this->renderTarget) return;
+
+        this->renderTarget->BeginDraw();
+        this->renderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
+        this->renderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
+
+        for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
+            if (this->controller)
+                this->controller->DrawShapes(
+                    dt,
+                    this->renderTarget,
+                    dt == DetectorType::Fingerprint ? this->brushYellow : this->brushCyan
+                );
+        }
+
+        // check hr and clear resource or throw?
+        this->renderTarget->EndDraw();
+        ::ValidateRect(hWnd, nullptr);
     }
 
     int Application::RunMessageLoop() {
@@ -186,18 +232,6 @@ namespace YellowRectangleCyanCircle {
         }
 
         switch (message) {
-        case IDM_ICON:
-        {
-            switch (lParam) {
-            case WM_RBUTTONDOWN:
-            case WM_CONTEXTMENU:
-            {
-                app->OnNotifyIconRightClick();
-            }
-            break;
-            }
-        }
-        break;
         case WM_COMMAND:
         {
             int commandID = LOWORD(wParam);
@@ -214,6 +248,35 @@ namespace YellowRectangleCyanCircle {
             }
         }
         break;
+        case IDM_ICON:
+        {
+            switch (lParam) {
+            case WM_RBUTTONDOWN:
+            case WM_CONTEXTMENU:
+            {
+                app->OnNotifyIconRightClick();
+            }
+            break;
+            }
+        }
+        break;
+        case WM_SIZE:
+        {
+            UINT width = LOWORD(lParam);
+            UINT height = HIWORD(lParam);
+            app->OnResize(width, height);
+        }
+        break;
+        case WM_DISPLAYCHANGE:
+        {
+            app->OnDisplayChange();
+        }
+        break;
+        case WM_PAINT:
+        {
+            app->OnPaint();
+        }
+        break;
         case WM_DESTROY:
         {
             app->OnDestroy();
@@ -223,5 +286,50 @@ namespace YellowRectangleCyanCircle {
             return ::DefWindowProc(hWnd, message, wParam, lParam);
         }
         return 0;
+    }
+
+    void Application::clearResources() {
+        this->renderTarget = nullptr;
+        this->brushCyan = nullptr;
+        this->brushYellow = nullptr;
+    }
+
+    void Application::createFactory() {
+        CComPtr<ID2D1Factory> f;
+
+        HRESULT hr = ::D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &f);
+        if (FAILED(hr)) throw COMException(hr);
+
+        this->factory = f;
+    }
+
+    HRESULT Application::initializeResources() {
+        HRESULT hr = S_OK;
+        if (!this->hWnd) return hr;
+        if (!this->factory) return hr;
+        // if already initialized - do nothing
+        if (this->renderTarget) return hr;
+
+        auto rc = GetClientRect(this->hWnd);
+        D2D1_SIZE_U size = D2D1::SizeU(rc.width, rc.height);
+
+        hr = this->factory->CreateHwndRenderTarget(
+            D2D1::RenderTargetProperties(),
+            D2D1::HwndRenderTargetProperties(hWnd, size),
+            &this->renderTarget
+        );
+        if (FAILED(hr)) return hr;
+
+        hr = this->renderTarget->CreateSolidColorBrush(
+            D2D1::ColorF(D2D1::ColorF::Cyan),
+            &this->brushCyan
+        );
+        if (FAILED(hr)) return hr;
+
+        hr = this->renderTarget->CreateSolidColorBrush(
+            D2D1::ColorF(D2D1::ColorF::Yellow),
+            &this->brushYellow
+        );
+        return hr;
     }
 }

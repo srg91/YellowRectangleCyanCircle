@@ -62,7 +62,7 @@ namespace YellowRectangleCyanCircle {
         virtual bool IsShapesChanged(DetectorType dt) const = 0;
         virtual void SetShapesChanged(DetectorType dt, bool value) = 0;
 
-        // Game window information
+        // Main application window
         virtual HWND GetWindowHandle() const = 0;
         virtual void SetWindowHandle(HWND value) = 0;
     };

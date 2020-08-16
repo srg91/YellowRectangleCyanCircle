@@ -53,7 +53,7 @@ namespace YellowRectangleCyanCircle {
         bool IsShapesChanged(DetectorType dt) const override final;
         void SetShapesChanged(DetectorType dt, bool value) override final;
 
-        // Game window information
+        // Main application window
         HWND GetWindowHandle() const override final;
         void SetWindowHandle(HWND value) override final;
     private:

@@ -1,4 +1,5 @@
 #include "controller.hpp"
+#include "shapes.hpp"
 
 namespace YellowRectangleCyanCircle {
     Controller::Controller() :
@@ -32,6 +33,16 @@ namespace YellowRectangleCyanCircle {
             this->context->SetDetectorEnabled(dt, value);
         }
         this->updateTimer();
+    }
+
+    void Controller::DrawShapes(DetectorType dt, CComPtr<ID2D1HwndRenderTarget> target, CComPtr<ID2D1SolidColorBrush> brush) {
+        if (!this->IsDetectorEnabled(dt)) return;
+        if (!this->context) return;
+
+        auto lock = this->context->LockOnRead();
+        for (const auto& shape : context->GetShapes(dt)) {
+            shape->OnDraw(target, brush);
+        }
     }
 
     bool Controller::isAnyDetectorEnabled() {
