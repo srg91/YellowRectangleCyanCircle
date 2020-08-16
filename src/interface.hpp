@@ -17,10 +17,6 @@ namespace YellowRectangleCyanCircle {
     struct IContext {
         // Context
 
-        // Locks
-        virtual std::shared_lock<std::shared_mutex> LockOnRead() = 0;
-        virtual std::unique_lock<std::shared_mutex> LockOnWrite() = 0;
-
         // Clear on-time variables
         virtual void ClearOnTick() = 0;
 
@@ -68,7 +64,7 @@ namespace YellowRectangleCyanCircle {
     };
 
     struct IAction {
-        virtual void Perform(IContext& context) = 0;
+        virtual void Perform(std::shared_ptr<IContext> context) = 0;
     };
 
     struct IHook {

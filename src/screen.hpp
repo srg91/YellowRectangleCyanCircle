@@ -16,7 +16,7 @@ namespace YellowRectangleCyanCircle {
         );
 
         void OnWindowMoved(HWND hWnd) override final;
-        void Perform(IContext& context);
+        void Perform(std::shared_ptr<IContext> context);
     private:
         std::shared_ptr<IDirect> direct;
 

@@ -10,10 +10,6 @@ namespace YellowRectangleCyanCircle {
     public:
         Context();
 
-        // Locks
-        std::shared_lock<std::shared_mutex> LockOnRead() override final;
-        std::unique_lock<std::shared_mutex> LockOnWrite() override final;
-
         // Clear on-time variables
         void ClearOnTick() override final;
 
@@ -57,7 +53,7 @@ namespace YellowRectangleCyanCircle {
         HWND GetWindowHandle() const override final;
         void SetWindowHandle(HWND value) override final;
     private:
-        std::shared_mutex mutex;
+        mutable std::shared_mutex mutex;
 
         bool isGameFound = false;
         Rect::Rect gameRect;
@@ -76,5 +72,8 @@ namespace YellowRectangleCyanCircle {
         std::unordered_map<DetectorType, bool> shapesChanged;
 
         HWND windowHandle;
+
+        std::shared_lock<std::shared_mutex> lockOnRead() const;
+        std::unique_lock<std::shared_mutex> lockOnWrite() const;
     };
 }

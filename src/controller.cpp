@@ -22,17 +22,13 @@ namespace YellowRectangleCyanCircle {
 
     bool Controller::IsDetectorEnabled(DetectorType dt) {
         if (!this->context) return false;
-        auto lock = this->context->LockOnRead();
         return this->context->IsDetectorEnabled(dt);
     }
 
     void Controller::EnableDetector(DetectorType dt, bool value) {
         if (!this->context) return;
 
-        {
-            auto lock = this->context->LockOnWrite();
-            this->context->SetDetectorEnabled(dt, value);
-        }
+        this->context->SetDetectorEnabled(dt, value);
         this->updateTimer();
     }
 
@@ -40,8 +36,8 @@ namespace YellowRectangleCyanCircle {
         if (!this->IsDetectorEnabled(dt)) return;
         if (!this->context) return;
 
-        auto lock = this->context->LockOnRead();
-        for (const auto& shape : context->GetShapes(dt)) {
+        auto shapes = context->GetShapes(dt);
+        for (const auto& shape : shapes) {
             shape->OnDraw(target, brush);
         }
     }

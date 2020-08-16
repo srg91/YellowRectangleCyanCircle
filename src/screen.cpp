@@ -21,19 +21,21 @@ namespace YellowRectangleCyanCircle {
         this->desktop->SwitchDisplay(display);
     }
 
-    void Screen::Perform(IContext& context) {
+    void Screen::Perform(std::shared_ptr<IContext> context) {
+        if (!context) return;
+
         std::shared_lock read(this->desktopMutex);
 
         Mat mat(this->desktop->GetHeight(), this->desktop->GetWidth(), CV_8UC4);
         this->desktop->Duplicate(std::data(mat));
 
-        if (context.IsGameFound())
+        if (context->IsGameFound())
         {
-            auto gameRect = context.GetGameRect();
+            auto gameRect = context->GetGameRect();
             cv::resize(mat, mat, cv::Size(gameRect.width, gameRect.height));
         }
 
         cv::cvtColor(mat, mat, cv::COLOR_BGRA2GRAY);
-        context.SetScreenImage(mat);
+        context->SetScreenImage(mat);
     }
 }
