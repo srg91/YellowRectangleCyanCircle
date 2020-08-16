@@ -310,7 +310,7 @@ namespace YellowRectangleCyanCircle {
         // if already initialized - do nothing
         if (this->renderTarget) return hr;
 
-        auto rc = GetClientRect(this->hWnd);
+        auto rc = WinAPI::GetClientRect(this->hWnd);
         D2D1_SIZE_U size = D2D1::SizeU(rc.width, rc.height);
 
         hr = this->factory->CreateHwndRenderTarget(

@@ -5,7 +5,7 @@ namespace YellowRectangleCyanCircle {
         std::shared_ptr<IDirect> direct,
         HWND hWnd
     ) : direct(direct) {
-        this->currentDisplay = GetWindowDisplayName(hWnd);
+        this->currentDisplay = WinAPI::GetWindowDisplayName(hWnd);
         this->desktop = std::make_unique<Desktop>(
             this->direct,
             this->currentDisplay
@@ -13,7 +13,7 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Screen::OnWindowMoved(HWND hWnd) {
-        auto display = GetWindowDisplayName(hWnd);
+        auto display = WinAPI::GetWindowDisplayName(hWnd);
         if (display == this->currentDisplay) return;
 
         std::unique_lock lock(this->desktopMutex);

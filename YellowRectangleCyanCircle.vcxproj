@@ -150,6 +150,7 @@
     <ClCompile Include="src\detector.cpp" />
     <ClCompile Include="src\direct.cpp" />
     <ClCompile Include="src\exception.cpp" />
+    <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\screen.cpp" />
     <ClCompile Include="src\shapes.cpp" />
@@ -165,6 +166,7 @@
     <ClInclude Include="src\detector.hpp" />
     <ClInclude Include="src\direct.hpp" />
     <ClInclude Include="src\exception.hpp" />
+    <ClInclude Include="src\hook.hpp" />
     <ClInclude Include="src\interface.hpp" />
     <ClInclude Include="src\main.hpp" />
     <ClInclude Include="src\resource.hpp" />
