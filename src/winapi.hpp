@@ -28,9 +28,14 @@ namespace YellowRectangleCyanCircle {
             VARIANT child;
         };
 
+        struct DisplayInfo {
+            std::wstring name;
+            Rect::Rect area;
+        };
+
         Rect::Rect GetClientRect(HWND hWnd);
         Rect::Rect GetWindowRect(HWND hWnd);
-        std::wstring GetWindowDisplayName(HWND hWnd);
+        DisplayInfo GetWindowDisplayInfo(HWND hWnd);
         std::wstring GetWindowText_(HWND hWnd);
     }
 }

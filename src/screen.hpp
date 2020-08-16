@@ -23,6 +23,6 @@ namespace YellowRectangleCyanCircle {
         std::unique_ptr<Desktop> desktop;
         mutable std::shared_mutex desktopMutex;
 
-        std::wstring currentDisplay;
+        WinAPI::DisplayInfo currentDisplay;
     };
 }

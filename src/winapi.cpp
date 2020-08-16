@@ -45,22 +45,30 @@ namespace YellowRectangleCyanCircle::WinAPI {
         RECT r;
         HRESULT hr = ::DwmGetWindowAttribute(hWnd, DWMWA_EXTENDED_FRAME_BOUNDS, &r, sizeof(RECT));
         if (SUCCEEDED(hr))
+        {
+            POINT v = { r.left, r.top };
+            ClientToScreen(hWnd, &v);
+
             return Rect::FromRECT(r);
+        }
         else
             return Rect::Rect();
     };
 
-    std::wstring GetWindowDisplayName(HWND hWnd) {
-        if (!hWnd) return L"";
+    DisplayInfo GetWindowDisplayInfo(HWND hWnd) {
+        DisplayInfo di = {};
+
+        if (!hWnd) return di;
 
         HMONITOR m = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
 
-        if (::GetMonitorInfo(m, &mi))
-            return mi.szDevice;
-        else
-            return L"";
+        if (::GetMonitorInfo(m, &mi)) {
+            di.name = mi.szDevice;
+            di.area = Rect::FromRECT(mi.rcWork);
+        }
+        return di;
     }
 
     std::wstring GetWindowText_(HWND hWnd) {

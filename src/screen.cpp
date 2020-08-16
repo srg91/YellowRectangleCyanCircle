@@ -5,19 +5,19 @@ namespace YellowRectangleCyanCircle {
         std::shared_ptr<IDirect> direct,
         HWND hWnd
     ) : direct(direct) {
-        this->currentDisplay = WinAPI::GetWindowDisplayName(hWnd);
+        this->currentDisplay = WinAPI::GetWindowDisplayInfo(hWnd);
         this->desktop = std::make_unique<Desktop>(
             this->direct,
-            this->currentDisplay);
+            this->currentDisplay.name);
     }
 
     void Screen::OnWindowMoved(HWND hWnd) {
-        auto display = WinAPI::GetWindowDisplayName(hWnd);
-        if (display == this->currentDisplay) return;
+        auto display = WinAPI::GetWindowDisplayInfo(hWnd);
+        if (display.name == this->currentDisplay.name) return;
 
         std::unique_lock lock(this->desktopMutex);
         this->currentDisplay = display;
-        this->desktop->SwitchDisplay(display);
+        this->desktop->SwitchDisplay(display.name);
     }
 
     void Screen::Perform(std::shared_ptr<IContext> context) {
@@ -34,6 +34,10 @@ namespace YellowRectangleCyanCircle {
         if (context->IsGameFound())
         {
             auto gameRect = context->GetGameRect();
+
+            gameRect.x -= this->currentDisplay.area.x;
+            gameRect.y -= this->currentDisplay.area.y;
+
             if (!gameRect.empty()) {
                 auto x = std::min<int>(desktopWidth, std::max(0, gameRect.x));
                 auto y = std::min<int>(desktopHeight, std::max(0, gameRect.y));
