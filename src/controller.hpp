@@ -39,7 +39,6 @@ namespace YellowRectangleCyanCircle {
         void initializeActions(HWND gameHWnd);
         void clearActions();
 
-        std::wstring gameWindowName;
         std::shared_ptr<Hook> hookCreateWindow;
         std::shared_ptr<Hook> hookDestroyWindow;
         std::shared_ptr<Hook> hookMoveWindow;
@@ -49,5 +48,8 @@ namespace YellowRectangleCyanCircle {
         void onCreateWindow(HWND hWnd, LONG idObject);
         void onDestroyWindow(HWND hWnd, LONG idObject);
         void onMoveWindow(HWND hWnd, LONG idObject);
+
+        std::wstring gameWindowName;
+        HWND prefindGame();
     };
 }

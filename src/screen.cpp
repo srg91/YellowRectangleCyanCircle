@@ -8,8 +8,7 @@ namespace YellowRectangleCyanCircle {
         this->currentDisplay = WinAPI::GetWindowDisplayName(hWnd);
         this->desktop = std::make_unique<Desktop>(
             this->direct,
-            this->currentDisplay
-            );
+            this->currentDisplay);
     }
 
     void Screen::OnWindowMoved(HWND hWnd) {
@@ -26,16 +25,29 @@ namespace YellowRectangleCyanCircle {
 
         std::shared_lock read(this->desktopMutex);
 
+        auto desktopWidth = this->desktop->GetWidth();
+        auto desktopHeight = this->desktop->GetHeight();
+
         Mat mat(this->desktop->GetHeight(), this->desktop->GetWidth(), CV_8UC4);
         this->desktop->Duplicate(std::data(mat));
 
         if (context->IsGameFound())
         {
             auto gameRect = context->GetGameRect();
-            mat = mat(gameRect);
+            if (!gameRect.empty()) {
+                auto x = std::min<int>(desktopWidth, std::max(0, gameRect.x));
+                auto y = std::min<int>(desktopHeight, std::max(0, gameRect.y));
+
+                auto rx = std::max(0, std::min<int>(desktopWidth, gameRect.x + gameRect.width));
+
+                auto ry = std::max(0, std::min<int>(desktopHeight, gameRect.y + gameRect.height));
+
+                auto rect = Rect::FromPoints(x, y, rx, ry);
+                if (!rect.empty()) mat = mat(rect);
+            }
         }
 
-        cv::cvtColor(mat, mat, cv::COLOR_BGRA2GRAY);
+        if (!mat.empty()) cv::cvtColor(mat, mat, cv::COLOR_BGRA2GRAY);
         context->SetScreenImage(mat);
     }
 }

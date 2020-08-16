@@ -1,5 +1,4 @@
 #include "detector.hpp"
-#include <opencv2/imgcodecs.hpp>
 
 namespace YellowRectangleCyanCircle {
     void AreaDetector::Perform(std::shared_ptr<IContext> context) {
@@ -9,13 +8,9 @@ namespace YellowRectangleCyanCircle {
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
-        auto image = Mat(context->GetScreenImage()).clone();
         context->SetWorkingArea(Rect::Rect());
 
-        auto now = std::chrono::system_clock::now();
-        std::stringstream buf;
-        buf << "D:\\file-" << std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count() << ".png";
-        cv::imwrite(std::data(buf.str()), image);
+        auto image = Mat(context->GetScreenImage()).clone();
 
         cv::blur(image, image, cv::Size(2, 4), cv::Point(0, 0));
         cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
@@ -108,6 +103,10 @@ namespace YellowRectangleCyanCircle {
 
         if (isKeypadEnabled && !keypadRect.empty()) {
             context->SetWorkingArea(keypadRect);
+
+            Mat res;
+            cv::cvtColor(image, res, cv::COLOR_GRAY2BGR);
+            cv::rectangle(res, keypadRect, cv::Scalar(0, 0, 255), 2);
         }
         else if (isFingerprintEnabled && !(fpRect.empty() || fppRect.empty())) {
             context->SetWorkingArea(cv::Rect(
@@ -213,7 +212,8 @@ namespace YellowRectangleCyanCircle {
         if (context->GetWorkingArea().empty()) return;
         if (std::size(context->GetShapes(this->type)) > 0) return;
 
-        if (context->KeypadGetEmptyRunCounter() >= context->KeypadMaxEmptyCirclesInRow) {
+        if (context->KeypadGetEmptyRunCounter() >= context->KeypadMaxEmptyCirclesInRow
+            && std::size(context->KeypadGetShapesCache()) > 0) {
             context->SetShapes(this->type, context->KeypadGetShapesCache());
             context->KeypadClearShapesCache();
             context->KeypadClearEmptyRunCounter();

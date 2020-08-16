@@ -24,6 +24,7 @@ namespace YellowRectangleCyanCircle {
         using Rect = cv::Rect;
 
         Rect FromRECT(const RECT& rect);
+        Rect FromPoints(int x, int y, int rx, int ry);
     }
 
     template <class T>

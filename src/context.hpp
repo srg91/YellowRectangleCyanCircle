@@ -19,6 +19,7 @@ namespace YellowRectangleCyanCircle {
 
         const Rect::Rect& GetGameRect() const override final;
         void SetGameRect(const Rect::Rect& rect) override final;
+        const Rect::Rect& GetPreviousGameRect() const override final;
 
         // Detector information
         bool IsDetectorEnabled(DetectorType dt) const override final;
@@ -57,6 +58,7 @@ namespace YellowRectangleCyanCircle {
 
         bool isGameFound = false;
         Rect::Rect gameRect;
+        Rect::Rect prevGameRect;
 
         std::unordered_map<DetectorType, bool> detectorStates;
 

@@ -8,10 +8,7 @@ namespace YellowRectangleCyanCircle {
     {
         this->initializeContext();
 
-        HWND gameHWnd = 0;
-        if (!std::empty(gameWindowName)) {
-            gameHWnd = ::FindWindow(nullptr, std::data(this->gameWindowName));
-        }
+        auto gameHWnd = this->prefindGame();
         this->initializeActions(gameHWnd);
         this->initializeHooks(gameHWnd);
     }
@@ -65,8 +62,17 @@ namespace YellowRectangleCyanCircle {
         while (this->isAnyDetectorEnabled()) {
             auto timerStart = std::chrono::high_resolution_clock::now();
 
-            for (auto& action : this->actions) {
-                action->Perform(this->context);
+            try {
+                for (auto& action : this->actions) {
+                    action->Perform(this->context);
+                }
+            }
+            catch (...) {
+                // TODO: bad way, rework
+                this->clearActions();
+
+                auto gameHWnd = this->prefindGame();
+                this->initializeActions(gameHWnd);
             }
 
             auto timerEnd = std::chrono::high_resolution_clock::now();
@@ -177,5 +183,11 @@ namespace YellowRectangleCyanCircle {
 
             if (this->screen && prevRect != newRect) this->screen->OnWindowMoved(hWnd);
         }
+    }
+
+    HWND Controller::prefindGame() {
+        HWND gameHWnd = 0;
+        if (std::empty(this->gameWindowName)) return gameHWnd;
+        return ::FindWindow(nullptr, std::data(this->gameWindowName));
     }
 }

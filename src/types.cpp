@@ -10,6 +10,13 @@ namespace YellowRectangleCyanCircle {
 				rect.bottom - rect.top
 			);
 		}
+
+        Rect FromPoints(int x, int y, int rx, int ry) {
+            return Rect(
+                cv::Point(x, y),
+                cv::Point(rx, ry)
+            );
+        }
 	}
 }
 

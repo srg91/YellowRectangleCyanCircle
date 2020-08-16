@@ -1,7 +1,5 @@
 #pragma once
 
-#include <opencv2/imgproc.hpp>
-
 #include "interface.hpp"
 #include "shapes.hpp"
 #include "types.hpp"

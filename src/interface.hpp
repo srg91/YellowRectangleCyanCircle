@@ -26,6 +26,7 @@ namespace YellowRectangleCyanCircle {
 
         virtual const Rect::Rect& GetGameRect() const = 0;
         virtual void SetGameRect(const Rect::Rect& rect) = 0;
+        virtual const Rect::Rect& GetPreviousGameRect() const = 0;
 
         // Detector information
         virtual bool IsDetectorEnabled(DetectorType dt) const = 0;

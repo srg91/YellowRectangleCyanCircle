@@ -9,11 +9,18 @@ namespace YellowRectangleCyanCircle {
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
-        const auto& prevArea = context->GetPreviousWorkingArea();
-        const auto& area = context->GetWorkingArea();
+        auto prevArea = context->GetPreviousWorkingArea();
+        auto prevGameRect = context->GetPreviousGameRect();
 
-        int xDiff = std::abs(prevArea.x - area.x);
-        int yDiff = std::abs(prevArea.y - area.y);
+        auto area = context->GetWorkingArea();
+        auto gameRect = context->GetGameRect();
+
+        int xDiff = std::abs(
+            (prevGameRect.x + prevArea.x) - (gameRect.x  + area.x)
+        );
+        int yDiff = std::abs(
+            (prevGameRect.y + prevArea.y) - (gameRect.y + area.y)
+        );
 
         int wDiff = std::abs(prevArea.width - area.width);
         int hDiff = std::abs(prevArea.height - area.height);
@@ -21,7 +28,7 @@ namespace YellowRectangleCyanCircle {
         bool shouldMoveWindow = xDiff > 5 || yDiff > 5 || wDiff > 5 || hDiff > 5;
 
         if (shouldMoveWindow)
-            ::MoveWindow(hWnd, area.x, area.y, area.width, area.height, false);
+            ::MoveWindow(hWnd, gameRect.x + area.x, gameRect.y + area.y, area.width, area.height, false);
 
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             if (context->IsShapesChanged(dt)) {

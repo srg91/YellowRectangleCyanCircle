@@ -38,7 +38,13 @@ namespace YellowRectangleCyanCircle {
 
     void Context::SetGameRect(const Rect::Rect& rect) {
         auto lock = this->lockOnWrite();
+        this->prevGameRect = this->gameRect;
         this->gameRect = rect;
+    }
+
+    const Rect::Rect& Context::GetPreviousGameRect() const {
+        auto lock = this->lockOnRead();
+        return this->prevGameRect;
     }
 
     bool Context::IsDetectorEnabled(DetectorType dt) const {
