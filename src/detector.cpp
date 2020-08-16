@@ -260,7 +260,9 @@ namespace YellowRectangleCyanCircle {
         auto foundCount = std::size(foundCircles);
         if (foundCount == 0)
             context->KeypadRegisterEmptyRun();
-        else if (foundCount >= 6)
+        else if (foundCount >= 6) {
             context->KeypadSetShapesCache(foundCircles);
+            context->KeypadClearEmptyRunCounter();
+        }
     }
 }

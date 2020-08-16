@@ -40,7 +40,7 @@ namespace YellowRectangleCyanCircle {
         virtual const Rect::Rect& GetPreviousWorkingArea() const = 0;
 
         // Keypad detector specials
-        const unsigned int KeypadMaxEmptyCirclesInRow = 4;
+        const unsigned int KeypadMaxEmptyCirclesInRow = 3;
 
         virtual unsigned int KeypadGetEmptyRunCounter() const = 0;
         virtual void KeypadRegisterEmptyRun() = 0;
