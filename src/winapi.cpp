@@ -62,4 +62,14 @@ namespace YellowRectangleCyanCircle::WinAPI {
         else
             return L"";
     }
+
+    std::wstring GetWindowText_(HWND hWnd) {
+        wchar_t buf[256];
+        if (::GetWindowText(hWnd, buf, 256)) {
+            return std::wstring(buf);
+        }
+        else {
+            return L"";
+        }
+    }
 }
