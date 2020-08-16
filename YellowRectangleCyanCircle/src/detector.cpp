@@ -115,7 +115,6 @@ namespace YellowRectangleCyanCircle {
 			context.KeypadClearEmptyRunCounter();
 			context.KeypadClearShapesCache();
 		}
-
 	}
 
 	void FingerprintDetector::Perform(IContext& context) {

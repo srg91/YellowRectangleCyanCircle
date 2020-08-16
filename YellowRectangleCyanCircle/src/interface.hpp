@@ -1,16 +1,30 @@
 #pragma once
 
+#include "d2d1.hpp"
 #include "types.hpp"
 
 #include <memory>
+#include <shared_mutex>
 #include <vector>
 
 namespace YellowRectangleCyanCircle {
 	struct IShape {
-		virtual void OnDraw() const = 0;
+		virtual void OnDraw(
+			const std::shared_ptr<D2D1HwndRenderTarget>& target,
+			const std::shared_ptr<D2D1SolidColorBrush>& brush
+		) const = 0;
 	};
 
 	struct IContext {
+		// Context
+
+		// Locks
+		virtual std::shared_lock<std::shared_mutex> LockOnRead() = 0;
+		virtual std::unique_lock<std::shared_mutex> LockOnWrite() = 0;
+
+		// Clear on-time variables
+		virtual void ClearOnTick() = 0;
+
 		// Game information
 		virtual bool IsGameFound() const = 0;
 		virtual void SetGameFound(bool value) = 0;
@@ -24,6 +38,7 @@ namespace YellowRectangleCyanCircle {
 
 		virtual const Rect::Rect& GetWorkingArea() const = 0;
 		virtual void SetWorkingArea(const Rect::Rect& value) = 0;
+		virtual const Rect::Rect& GetPreviousWorkingArea() const = 0;
 
 		// Keypad detector specials
 		const unsigned int KeypadMaxEmptyCirclesInRow = 3;
@@ -44,6 +59,13 @@ namespace YellowRectangleCyanCircle {
 		virtual std::vector<std::shared_ptr<IShape>> GetShapes(DetectorType dt) const = 0;
 		virtual void SetShapes(DetectorType dt, const std::vector<std::shared_ptr<IShape>>& shapes) = 0;
 		virtual void ClearShapes(DetectorType dt) = 0;
+
+		virtual bool IsShapesChanged(DetectorType dt) const = 0;
+		virtual void SetShapesChanged(DetectorType dt, bool value) = 0;
+
+		// Window information
+		virtual HWND GetWindowHandle() const = 0;
+		virtual void SetWindowHandle(HWND value) = 0;
 	};
 
 	struct IAction {

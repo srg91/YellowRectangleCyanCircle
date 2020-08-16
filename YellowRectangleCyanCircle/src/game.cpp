@@ -21,7 +21,7 @@ namespace YellowRectangleCyanCircle {
 	void Game::OnWindowCreated(HWND hWnd) {
 		if (this->IsFound()) return;
 		
-		std::wstring title = this->winAPI->GetWindowText(hWnd);
+		std::wstring title = this->winAPI->GetWndText(hWnd);
 		if (title == this->windowTitle) {
 			std::unique_lock lock(this->mutex);
 			this->hWnd = hWnd;

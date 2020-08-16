@@ -6,7 +6,7 @@ namespace TestGame {
 
 		std::wstring unknownTitle = L"unknown game";
 
-		EXPECT_CALL(*winAPI, GetWindowText).
+		EXPECT_CALL(*winAPI, GetWndText).
 			Times(2).
 			WillOnce(Return(unknownTitle)).
 			WillRepeatedly(Return(Defaults::WindowTitle));

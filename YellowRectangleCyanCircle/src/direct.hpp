@@ -4,8 +4,8 @@
 #pragma comment(lib, "dxgi.lib")
 
 #include "utils.hpp"
+#include "types.hpp"
 
-#include <atlbase.h>
 #include <d3d11.h>
 #include <d3dcommon.h>
 #include <dxgi1_2.h>
@@ -13,41 +13,16 @@
 #include <memory>
 
 namespace YellowRectangleCyanCircle {
-	// IDXGIObject (not really)
-	template <class T>
-	class DirectObject {
-	public:
-		DirectObject() :
-			DirectObject<T>(nullptr)
-		{}
-
-		DirectObject(CComPtr<T> object) :
-			object(object)
-		{}
-
-		CComPtr<T> Get() const {
-			return this->object;
-		}
-
-		void Set(CComPtr<T> value) {
-			this->object = value;
-		}
-
-		operator bool() const { return bool(this->object); };
-	protected:
-		CComPtr<T> object;
-	};
-
 	// ID3D11Texture2D
-	class DirectTexture2D : public DirectObject<ID3D11Texture2D> {
+	class DirectTexture2D : public ComObject<ID3D11Texture2D> {
 	public:
-		using DirectObject<ID3D11Texture2D>::DirectObject;
+		using ComObject<ID3D11Texture2D>::ComObject;
 	};
 
 	// IDXGIResource
-	class DirectResource : public DirectObject<IDXGIResource> {
+	class DirectResource : public ComObject<IDXGIResource> {
 	public:
-		using DirectObject<IDXGIResource>::DirectObject;
+		using ComObject<IDXGIResource>::ComObject;
 
 		virtual HRESULT QueryInterface(std::shared_ptr<DirectTexture2D>& texture) const;
 	};
@@ -58,9 +33,9 @@ namespace YellowRectangleCyanCircle {
 	// For DirectOutput.QueryInterface
 	class DirectOutput1;
 	
-	class DirectOutput : public DirectObject<IDXGIOutput> {
+	class DirectOutput : public ComObject<IDXGIOutput> {
 	public:
-		using DirectObject<IDXGIOutput>::DirectObject;
+		using ComObject<IDXGIOutput>::ComObject;
 
 		virtual HRESULT GetDesc(DXGI_OUTPUT_DESC& desc) const;
 		virtual HRESULT GetParent(std::shared_ptr<DirectAdapter>& adapter) const;
@@ -72,9 +47,9 @@ namespace YellowRectangleCyanCircle {
 	class Direct11Device;
 	class DirectOutputDuplication;
 
-	class DirectOutput1 : public DirectObject<IDXGIOutput1> {
+	class DirectOutput1 : public ComObject<IDXGIOutput1> {
 	public:
-		using DirectObject<IDXGIOutput1>::DirectObject;
+		using ComObject<IDXGIOutput1>::ComObject;
 
 		virtual HRESULT DuplicateOutput(
 			const std::shared_ptr<Direct11Device>& device,
@@ -83,33 +58,33 @@ namespace YellowRectangleCyanCircle {
 	};
 
 	// IDXGIAdapter
-	class DirectAdapter : public DirectObject<IDXGIAdapter> {
+	class DirectAdapter : public ComObject<IDXGIAdapter> {
 	public:
-		using DirectObject<IDXGIAdapter>::DirectObject;
+		using ComObject<IDXGIAdapter>::ComObject;
 
 		virtual HRESULT EnumOutputs(UINT index, std::shared_ptr<DirectOutput>& output) const;
 	};
 
 	// IDXGIFactory1
-	class DirectFactory1 : public DirectObject<IDXGIFactory1> {
+	class DirectFactory1 : public ComObject<IDXGIFactory1> {
 	public:
-		using DirectObject<IDXGIFactory1>::DirectObject;
+		using ComObject<IDXGIFactory1>::ComObject;
 
 		virtual HRESULT EnumAdapters(UINT index, std::shared_ptr<DirectAdapter>& adapter) const;
 	};
 
 	// IDXGIDevice
-	class DirectDevice : public DirectObject<IDXGIDevice> {
+	class DirectDevice : public ComObject<IDXGIDevice> {
 	public:
-		using DirectObject<IDXGIDevice>::DirectObject;
+		using ComObject<IDXGIDevice>::ComObject;
 
 		virtual HRESULT GetParent(std::shared_ptr<DirectAdapter>& adapter) const;
 	};
 
 	// ID3D11Device
-	class Direct11Device : public DirectObject<ID3D11Device> {
+	class Direct11Device : public ComObject<ID3D11Device> {
 	public:
-		using DirectObject<ID3D11Device>::DirectObject;
+		using ComObject<ID3D11Device>::ComObject;
 
 		virtual HRESULT CreateTexture2D(
 			const std::shared_ptr<D3D11_TEXTURE2D_DESC>& desc,
@@ -120,9 +95,9 @@ namespace YellowRectangleCyanCircle {
 	};
 
 	// ID3D11DeviceContext
-	class Direct11DeviceContext : public DirectObject<ID3D11DeviceContext> {
+	class Direct11DeviceContext : public ComObject<ID3D11DeviceContext> {
 	public:
-		using DirectObject<ID3D11DeviceContext>::DirectObject;
+		using ComObject<ID3D11DeviceContext>::ComObject;
 
 		virtual void CopyTexture(
 			std::shared_ptr<DirectTexture2D>& dst,
@@ -142,9 +117,9 @@ namespace YellowRectangleCyanCircle {
 	};
 
 	// IDXGIOutputDuplication
-	class DirectOutputDuplication : public DirectObject<IDXGIOutputDuplication> {
+	class DirectOutputDuplication : public ComObject<IDXGIOutputDuplication> {
 	public:
-		using DirectObject<IDXGIOutputDuplication>::DirectObject;
+		using ComObject<IDXGIOutputDuplication>::ComObject;
 		
 		virtual std::shared_ptr<DXGI_OUTDUPL_DESC> GetDesc() const;
 		

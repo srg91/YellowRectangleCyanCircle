@@ -1,20 +1,26 @@
 #pragma once
 
+#include "context.hpp"
+#include "detector.hpp"
 #include "game.hpp"
+#include "interface.hpp"
 #include "screen.hpp"
 
+#include <thread>
+
 namespace YellowRectangleCyanCircle {
-	//struct IController {
-	//	virtual void OnTick() = 0;
-	//	//virtual void OnResize() = 0;
-	//	//virtual void OnPaint() = 0;
-	//};
+	using ControllerActions = std::vector<std::shared_ptr<IAction>>;
 
 	class Controller {
 	public:
+		Controller();
 
+		std::shared_ptr<Context> GetContext();
+
+		bool IsDetectorEnabled(DetectorType dt);
+		void EnableDetector(DetectorType dt, bool value);
 	private:
-		std::shared_ptr<Game> game;
-		std::shared_ptr<Screen> screen;
+		ControllerActions actions;
+		std::shared_ptr<Context> context;
 	};
 }

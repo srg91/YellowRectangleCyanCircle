@@ -8,7 +8,10 @@ namespace YellowRectangleCyanCircle {
 	public:
 		Circle(int x, int y, int radius);
 
-		void OnDraw() const override final;
+		void OnDraw(
+			const std::shared_ptr<D2D1HwndRenderTarget>& target,
+			const std::shared_ptr<D2D1SolidColorBrush>& brush
+		) const override final;
 	private:
 		int x, y, radius;
 	};
@@ -18,7 +21,10 @@ namespace YellowRectangleCyanCircle {
 	public:
 		Rectangle(Rect::Rect rect);
 
-		void OnDraw() const override final;
+		void OnDraw(
+			const std::shared_ptr<D2D1HwndRenderTarget>& target,
+			const std::shared_ptr<D2D1SolidColorBrush>& brush
+		) const override final;
 	private:
 		Rect::Rect rect;
 	};

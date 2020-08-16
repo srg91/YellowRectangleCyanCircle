@@ -13,6 +13,39 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// Neutral (Default) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEUD)
+LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
+#pragma code_page(1251)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_APP_ICON            ICON                    "AppIcon.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_APP_TITLE           "Yellow Rectangle Cyan Circle"
+    IDS_GAME_WINDOW_NAME    "Fs`oe!Uidgu!@tun!W"
+    IDS_APP_WINDOW_CLASSNAME "YellowRectangleCyanCircleWindow"
+END
+
+#endif    // Neutral (Default) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // Russian (Russia) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
@@ -44,19 +77,34 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+#endif    // Russian (Russia) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// String Table
+// Menu
 //
 
-STRINGTABLE
+IDR_APP_MENU MENU
 BEGIN
-    IDS_APP_TITLE           "Yellow Rectangle Cyan Circle"
-    IDS_GAME_WINDOW_NAME    "Fs`oe!Uidgu!@tun!W"
+    POPUP "Menu"
+    BEGIN
+        MENUITEM "&Fingerprint Scanner",        IDM_FINGERPRINTSCANNER
+        MENUITEM "Keypad &Cracker",             IDM_KEYPADCRACKER
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
 END
 
-#endif    // Russian (Russia) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
