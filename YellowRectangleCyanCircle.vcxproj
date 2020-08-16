@@ -147,6 +147,7 @@
     <ClCompile Include="src\context.cpp" />
     <ClCompile Include="src\controller.cpp" />
     <ClCompile Include="src\desktop.cpp" />
+    <ClCompile Include="src\detector.cpp" />
     <ClCompile Include="src\direct.cpp" />
     <ClCompile Include="src\exception.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="src\context.hpp" />
     <ClInclude Include="src\controller.hpp" />
     <ClInclude Include="src\desktop.hpp" />
+    <ClInclude Include="src\detector.hpp" />
     <ClInclude Include="src\direct.hpp" />
     <ClInclude Include="src\exception.hpp" />
     <ClInclude Include="src\interface.hpp" />
