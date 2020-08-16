@@ -6,7 +6,6 @@ namespace YellowRectangleCyanCircle {
 
         bool isKeypadEnabled = context->IsDetectorEnabled(DetectorType::Keypad);
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
-
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
         auto image = Mat(context->GetScreenImage()).clone();

@@ -14,7 +14,7 @@ namespace YellowRectangleCyanCircle {
         }
 
         HWND gameHWnd = 0;
-        if (!gameWindowName.empty()) {
+        if (!std::empty(gameWindowName)) {
             gameHWnd = ::FindWindow(nullptr, std::data(this->gameWindowName));
         }
         this->initializeActions(gameHWnd);
@@ -27,6 +27,7 @@ namespace YellowRectangleCyanCircle {
         }
         this->context = nullptr;
         this->clearHooks();
+        this->clearActions();
     }
 
     bool Controller::IsDetectorEnabled(DetectorType dt) {
@@ -64,9 +65,11 @@ namespace YellowRectangleCyanCircle {
     void Controller::onTimer() {
         while (this->isAnyDetectorEnabled()) {
             auto timerStart = std::chrono::high_resolution_clock::now();
-            using namespace std::chrono_literals;
-            std::this_thread::sleep_for(900ms);
-            OutputDebugString(L"OnTimer tick\n");
+
+            for (auto& action : this->actions) {
+                action->Perform(this->context);
+            }
+
             auto timerEnd = std::chrono::high_resolution_clock::now();
 
             auto duration = timerEnd - timerStart;
@@ -93,6 +96,21 @@ namespace YellowRectangleCyanCircle {
     void Controller::initializeActions(HWND gameHWnd) {
         this->game = std::make_shared<Game>(this->gameWindowName, gameHWnd);
         this->screen = std::make_shared<Screen>(std::make_shared<Direct>(), gameHWnd);
+
+        this->actions = {
+            this->game,
+            this->screen,
+            std::make_shared<AreaDetector>(),
+            std::make_shared<FingerprintDetector>(),
+            std::make_shared<KeypadDetector>(),
+            std::make_shared<WindowUpdater>(),
+        };
+    }
+
+    void Controller::clearActions() {
+        this->actions.clear();
+        this->game = nullptr;
+        this->screen = nullptr;
     }
 
     void Controller::initializeHooks(HWND gameHWnd) {

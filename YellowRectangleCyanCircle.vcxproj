@@ -158,6 +158,7 @@
     <ClCompile Include="src\types.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\winapi.cpp" />
+    <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\application.hpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="src\types.hpp" />
     <ClInclude Include="src\utils.hpp" />
     <ClInclude Include="src\winapi.hpp" />
+    <ClInclude Include="src\window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

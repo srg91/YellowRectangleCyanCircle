@@ -1,9 +1,11 @@
 #pragma once
 
 #include "context.hpp"
+#include "detector.hpp"
 #include "game.hpp"
 #include "hook.hpp"
 #include "screen.hpp"
+#include "window.hpp"
 
 #include <chrono>
 #include <thread>
@@ -35,6 +37,7 @@ namespace YellowRectangleCyanCircle {
         std::shared_ptr<Screen> screen;
         std::vector<std::shared_ptr<IAction>> actions;
         void initializeActions(HWND gameHWnd);
+        void clearActions();
 
         std::wstring gameWindowName;
         std::shared_ptr<Hook> hookCreateWindow;
