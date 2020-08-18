@@ -10,17 +10,23 @@ namespace YellowRectangleCyanCircle {
         if (!(isKeypadEnabled || isFingerprintEnabled)) return;
 
         auto prevArea = context->GetPreviousWorkingArea();
-        auto prevGameRect = context->GetPreviousGameRect();
+        auto prevDisplayRect = context->GetPreviousDisplayRect();
+        // Convert previous game rect position from absolute to relative to previous display
+        auto prevGameRect = Rect::ClampROI(context->GetPreviousGameRect(), prevDisplayRect);
 
         auto area = context->GetWorkingArea();
-        auto gameRect = context->GetGameRect();
+        auto displayRect = context->GetDisplayRect();
+        // Convert game rect position from absolute to relative to current display
+        auto gameRect = Rect::ClampROI(context->GetGameRect(), displayRect);
 
-        int xDiff = std::abs(
-            (prevGameRect.x + prevArea.x) - (gameRect.x  + area.x)
-        );
-        int yDiff = std::abs(
-            (prevGameRect.y + prevArea.y) - (gameRect.y + area.y)
-        );
+        auto prevX = prevDisplayRect.x + prevGameRect.x + prevArea.x;
+        auto prevY = prevDisplayRect.y + prevGameRect.y + prevArea.y;
+
+        auto newX = displayRect.x + gameRect.x + area.x;
+        auto newY = displayRect.y + gameRect.y + area.y;
+
+        int xDiff = std::abs(prevX - newX);
+        int yDiff = std::abs(prevY - newY);
 
         int wDiff = std::abs(prevArea.width - area.width);
         int hDiff = std::abs(prevArea.height - area.height);
@@ -28,13 +34,18 @@ namespace YellowRectangleCyanCircle {
         bool shouldMoveWindow = xDiff > 5 || yDiff > 5 || wDiff > 5 || hDiff > 5;
 
         if (shouldMoveWindow)
-            ::MoveWindow(hWnd, gameRect.x + area.x, gameRect.y + area.y, area.width, area.height, false);
+            ::MoveWindow(hWnd, newX, newY, area.width, area.height, false);
 
-        for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
-            if (context->IsShapesChanged(dt)) {
-                ::InvalidateRect(hWnd, nullptr, false);
-                break;
+        bool shouldRedraw = shouldMoveWindow;
+        if (!shouldRedraw) {
+            for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
+                if (context->IsDetectorEnabled(dt) && context->IsShapesChanged(dt)) {
+                    shouldRedraw = true;
+                    break;
+                }
             }
         }
+
+        if (shouldRedraw) ::InvalidateRect(hWnd, nullptr, false);
     }
 }

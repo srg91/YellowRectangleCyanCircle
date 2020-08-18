@@ -1,15 +1,23 @@
 #include "types.hpp"
 
 namespace YellowRectangleCyanCircle {
-	namespace Rect {
-		Rect FromRECT(const RECT& rect) {
-			return Rect(
-				rect.left,
-				rect.top,
-				rect.right - rect.left,
-				rect.bottom - rect.top
-			);
-		}
+    namespace Rect {
+        Rect ClampROI(const Rect& roi, const Rect& clamp) {
+            auto x = std::clamp(roi.x - clamp.x, 0, clamp.width);
+            auto y = std::clamp(roi.y - clamp.y, 0, clamp.height);
+            auto xr = std::clamp(roi.x + roi.width - clamp.x, 0, clamp.width);
+            auto yr = std::clamp(roi.y + roi.height - clamp.y, 0, clamp.height);
+            return FromPoints(x, y, xr, yr);
+        }
+
+        Rect FromRECT(const RECT& rect) {
+            return Rect(
+                rect.left,
+                rect.top,
+                rect.right - rect.left,
+                rect.bottom - rect.top
+            );
+        }
 
         Rect FromPoints(int x, int y, int rx, int ry) {
             return Rect(
@@ -17,12 +25,12 @@ namespace YellowRectangleCyanCircle {
                 cv::Point(rx, ry)
             );
         }
-	}
+    }
 }
 
 namespace std
 {
-	std::uint8_t* data(YellowRectangleCyanCircle::Mat mat) {
-		return mat.data;
-	}
+    std::uint8_t* data(YellowRectangleCyanCircle::Mat mat) {
+        return mat.data;
+    }
 }

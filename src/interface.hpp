@@ -28,6 +28,11 @@ namespace YellowRectangleCyanCircle {
         virtual void SetGameRect(const Rect::Rect& rect) = 0;
         virtual const Rect::Rect& GetPreviousGameRect() const = 0;
 
+        // Display information
+        virtual const Rect::Rect& GetDisplayRect() const = 0;
+        virtual void SetDisplayRect(const Rect::Rect& rect) = 0;
+        virtual const Rect::Rect& GetPreviousDisplayRect() const = 0;
+
         // Detector information
         virtual bool IsDetectorEnabled(DetectorType dt) const = 0;
         virtual void SetDetectorEnabled(DetectorType dt, bool value) = 0;
