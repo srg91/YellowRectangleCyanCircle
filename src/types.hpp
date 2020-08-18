@@ -24,6 +24,8 @@ namespace YellowRectangleCyanCircle {
     namespace Rect {
         using Rect = cv::Rect;
 
+        // Clamp ROI to image correct bounds
+        Rect ClampROI(const Rect& rect, const Rect& roi);
         Rect FromRECT(const RECT& rect);
         Rect FromPoints(int x, int y, int rx, int ry);
     }

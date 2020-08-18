@@ -1,8 +1,5 @@
 #include "main.hpp"
 
-#include "context.hpp"
-#include "detector.hpp"
-
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
     try {
         YellowRectangleCyanCircle::Application app(hInstance);

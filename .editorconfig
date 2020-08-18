@@ -6,6 +6,6 @@ indent_size = 4
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*.{sln,vcxproj,filters,user}]
+[*.{sln,vcxproj,filters,user,rc}]
 trim_trailing_whitespace = false
 insert_final_newline = false
