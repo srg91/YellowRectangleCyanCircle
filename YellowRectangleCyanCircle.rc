@@ -26,7 +26,15 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_DEFAULT
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APP_ICON            ICON                    "AppIcon.ico"
+IDI_APP_ICON            ICON                    "icon\\AppIcon.ico"
+
+IDI_ICON_CDRD           ICON                    "icon\\NotifyIcon_CDRD.ico"
+
+IDI_ICON_CDRE           ICON                    "icon\\NotifyIcon_CDRE.ico"
+
+IDI_ICON_CERD           ICON                    "icon\\NotifyIcon_CERD.ico"
+
+IDI_ICON_CERE           ICON                    "icon\\NotifyIcon_CERE.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

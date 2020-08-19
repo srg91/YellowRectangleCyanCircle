@@ -196,10 +196,14 @@
     <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="AppIcon.ico" />
+    <ResourceCompile Include="YellowRectangleCyanCircle.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="YellowRectangleCyanCircle.rc" />
+    <Image Include="icon\AppIcon.ico" />
+    <Image Include="icon\NotifyIcon_CDRD.ico" />
+    <Image Include="icon\NotifyIcon_CDRE.ico" />
+    <Image Include="icon\NotifyIcon_CERD.ico" />
+    <Image Include="icon\NotifyIcon_CERE.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

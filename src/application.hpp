@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace YellowRectangleCyanCircle {
     class Application {
@@ -54,5 +55,10 @@ namespace YellowRectangleCyanCircle {
 
         std::shared_ptr<Controller> controller;
         std::wstring loadGameWindowName();
+
+        std::unordered_map<int, HICON> notifyIconStateIcons;
+
+        void preloadIcons();
+        void switchIcon(bool keypadEnabled, bool fpEnabled);
     };
 }

@@ -12,6 +12,7 @@ namespace YellowRectangleCyanCircle {
 
         this->registerWindowClass(className);
         this->createWindow(className);
+        this->preloadIcons();
         this->createNotifyIcon();
         this->createNotifyIconMenu();
         this->createFactory();
@@ -42,6 +43,9 @@ namespace YellowRectangleCyanCircle {
             bool enabled = !this->controller->IsDetectorEnabled(dt);
             this->notifyIconMenuCheck(commandID, enabled);
             this->controller->EnableDetector(dt, enabled);
+            this->switchIcon(
+                this->controller->IsDetectorEnabled(DetectorType::Keypad),
+                this->controller->IsDetectorEnabled(DetectorType::Fingerprint));
         }
         break;
         }
@@ -121,7 +125,7 @@ namespace YellowRectangleCyanCircle {
         this->notifyIcon.cbSize = sizeof(NOTIFYICONDATA);
         this->notifyIcon.uID = 1;
         this->notifyIcon.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
-        this->notifyIcon.hIcon = ::LoadIcon(this->hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
+        this->notifyIcon.hIcon = this->notifyIconStateIcons.at(IDI_ICON_CDRD);
         this->notifyIcon.hWnd = hWnd;
         this->notifyIcon.uCallbackMessage = IDM_ICON;
         ::LoadString(hInstance, IDS_APP_TITLE, this->notifyIcon.szTip, 128);
@@ -342,5 +346,26 @@ namespace YellowRectangleCyanCircle {
             c ^= 1;
         }
         return name;
+    }
+
+    void Application::preloadIcons() {
+        for (auto iconId : { IDI_ICON_CDRD, IDI_ICON_CDRE, IDI_ICON_CERD, IDI_ICON_CERE }) {
+            this->notifyIconStateIcons[iconId] = ::LoadIcon(this->hInstance, MAKEINTRESOURCE(iconId));
+        }
+    }
+
+    void Application::switchIcon(bool keypadEnabled, bool fpEnabled) {
+        int iconId;
+        if (!keypadEnabled && !fpEnabled)
+            iconId = IDI_ICON_CDRD;
+        else if (!keypadEnabled && fpEnabled)
+            iconId = IDI_ICON_CDRE;
+        else if (keypadEnabled && !fpEnabled)
+            iconId = IDI_ICON_CERD;
+        else
+            iconId = IDI_ICON_CERE;
+
+        this->notifyIcon.hIcon = this->notifyIconStateIcons[iconId];
+        ::Shell_NotifyIcon(NIM_MODIFY, &this->notifyIcon);
     }
 }

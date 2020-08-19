@@ -3,6 +3,10 @@
 #define IDI_APP_ICON                    103
 #define IDR_APP_MENU                    104
 #define IDS_APP_WINDOW_CLASSNAME        105
+#define IDI_ICON_CDRD                   106
+#define IDI_ICON_CDRE                   107
+#define IDI_ICON_CERD                   108
+#define IDI_ICON_CERE                   109
 #define IDM_ICON                        40000
 #define IDM_FINGERPRINTSCANNER          40001
 #define IDM_KEYPADCRACKER               40002

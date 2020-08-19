@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\icon">
+      <UniqueIdentifier>{ef40d50b-f296-4b87-98b1-afad9f1ab7a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -124,13 +127,25 @@
     <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="AppIcon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="YellowRectangleCyanCircle.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon\AppIcon.ico">
+      <Filter>Resource Files\icon</Filter>
+    </Image>
+    <Image Include="icon\NotifyIcon_CDRD.ico">
+      <Filter>Resource Files\icon</Filter>
+    </Image>
+    <Image Include="icon\NotifyIcon_CDRE.ico">
+      <Filter>Resource Files\icon</Filter>
+    </Image>
+    <Image Include="icon\NotifyIcon_CERD.ico">
+      <Filter>Resource Files\icon</Filter>
+    </Image>
+    <Image Include="icon\NotifyIcon_CERE.ico">
+      <Filter>Resource Files\icon</Filter>
+    </Image>
   </ItemGroup>
 </Project>
