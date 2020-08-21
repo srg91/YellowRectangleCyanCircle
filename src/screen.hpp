@@ -2,6 +2,7 @@
 
 #include "desktop.hpp"
 #include "interface.hpp"
+#include "logging.hpp"
 #include "types.hpp"
 #include "winapi.hpp"
 

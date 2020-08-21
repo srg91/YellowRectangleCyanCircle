@@ -1,6 +1,8 @@
 #pragma once
 
+#include "exception.hpp"
 #include "interface.hpp"
+#include "logging.hpp"
 #include "winapi.hpp"
 #include "types.hpp"
 
@@ -13,15 +15,6 @@
 #include <unordered_map>
 
 namespace YellowRectangleCyanCircle {
-    class HookAlreadyRegistered : public std::exception {
-    public:
-        HookAlreadyRegistered(DWORD eventId);
-
-        const char* what() const;
-    private:
-        DWORD eventId;
-    };
-
     class Hook : public IHook {
     public:
         Hook(Hook&& other) noexcept;

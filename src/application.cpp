@@ -5,6 +5,8 @@ namespace YellowRectangleCyanCircle {
         hInstance(hInstance),
         hWnd(0)
     {
+        L(trace, "[Application::Application] called");
+
         ::CoInitialize(nullptr);
 
         wchar_t className[128];
@@ -18,18 +20,24 @@ namespace YellowRectangleCyanCircle {
         this->createFactory();
 
         this->controller = std::make_shared<Controller>(this->hWnd, this->loadGameWindowName());
+
+        L(info, "[Application::Application] initialized");
     }
 
     Application::~Application() {
-        if (this->controller) this->controller = nullptr;
+        L(trace, "[Application::~Application] called");
 
+        this->controller = nullptr;
         ::CoUninitialize();
+
+        L(info, "[Application::Application] destroyed");
     }
 
     void Application::OnCommand(int commandID) {
         switch (commandID) {
         case IDM_EXIT:
         {
+            L(debug, "[Application::OnCommand] exit menu item pressed");
             ::DestroyWindow(this->hWnd);
             this->hWnd = 0;
         }
@@ -37,22 +45,31 @@ namespace YellowRectangleCyanCircle {
         case IDM_FINGERPRINTSCANNER:
         case IDM_KEYPADCRACKER:
         {
-            if (!this->controller) break;
+            L(debug, "[Application::OnCommand] enable detector menu item pressed");
+
+            auto controller = this->controller;
+            if (!controller) {
+                L(debug, "[Application::OnCommand] failed, no controller");
+                break;
+            }
 
             auto dt = (commandID == IDM_FINGERPRINTSCANNER) ? DetectorType::Fingerprint : DetectorType::Keypad;
-            bool enabled = !this->controller->IsDetectorEnabled(dt);
+            bool enabled = !controller->IsDetectorEnabled(dt);
             this->notifyIconMenuCheck(commandID, enabled);
-            this->controller->EnableDetector(dt, enabled);
+            controller->EnableDetector(dt, enabled);
             this->switchIcon(
-                this->controller->IsDetectorEnabled(DetectorType::Keypad),
-                this->controller->IsDetectorEnabled(DetectorType::Fingerprint));
+                controller->IsDetectorEnabled(DetectorType::Keypad),
+                controller->IsDetectorEnabled(DetectorType::Fingerprint));
         }
         break;
         }
     }
 
     void Application::OnDestroy() {
-        if (this->controller) this->controller = nullptr;
+        L(trace, "[Application::OnDestroy] called");
+
+        this->controller = nullptr;
+
         this->destroyNotifyIcon();
         this->clearResources();
 
@@ -69,42 +86,63 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::OnResize(UINT width, UINT height) {
-        if (!this->hWnd) return;
-        if (!this->renderTarget) return;
+        L(trace, "[Application::OnResize] called");
 
-        this->renderTarget->Resize(D2D1::SizeU(width, height));
-    }
-
-    void Application::OnPaint() {
-        if (!this->hWnd) return;
-
-        HRESULT hr = this->initializeResources();
-        if (FAILED(hr)) {
-            if (hr == D2DERR_RECREATE_TARGET) {
-                this->clearResources();
-            }
-            // throw exception?
+        if (!this->hWnd) {
+            L(debug, "[Application::OnResize] failed, no main window");
             return;
         }
 
-        if (!this->renderTarget) return;
+        auto target = this->renderTarget;
+        if (!target) {
+            L(debug, "[Application::OnResize] failed, no render target");
+            return;
+        }
+
+        target->Resize(D2D1::SizeU(width, height));
+    }
+
+    void Application::OnPaint() {
+        L(trace, "[Application::OnPaint] called");
+
+        if (!this->hWnd) {
+            L(debug, "[Application::OnPaint] failed, no main window");
+            return;
+        }
+
+        HRESULT hr = this->initializeResources();
+        if (FAILED(hr)) {
+            this->clearResources();
+            return;
+        }
 
         this->renderTarget->BeginDraw();
         this->renderTarget->SetTransform(D2D1::Matrix3x2F::Identity());
         this->renderTarget->Clear(D2D1::ColorF(D2D1::ColorF::Black));
 
-        for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
-            if (this->controller)
-                this->controller->DrawShapes(
+        auto controller = this->controller;
+        if (controller) {
+            for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
+                controller->DrawShapes(
                     dt,
                     this->renderTarget,
                     dt == DetectorType::Fingerprint ? this->brushYellow : this->brushCyan
                 );
+            }
         }
 
-        // check hr and clear resource or throw?
-        this->renderTarget->EndDraw();
-        ::ValidateRect(hWnd, nullptr);
+        hr = this->renderTarget->EndDraw();
+        if (FAILED(hr)) {
+            if (hr == D2DERR_RECREATE_TARGET) {
+                L(debug, "[Application::OnPaint] D2D1 asked to recreate target");
+                this->clearResources();
+            }
+            else {
+                L(debug, "[Application::OnPaint] end draw failed: {}", hr);
+            }
+        }
+
+        if (SUCCEEDED(hr) || hr == D2DERR_RECREATE_TARGET) ::ValidateRect(hWnd, nullptr);
     }
 
     int Application::RunMessageLoop() {
@@ -120,6 +158,8 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::createNotifyIcon() {
+        L(trace, L"[Application::createNotifyIcon] called");
+
         ::RtlZeroMemory(&this->notifyIcon, sizeof(NOTIFYICONDATA));
 
         this->notifyIcon.cbSize = sizeof(NOTIFYICONDATA);
@@ -135,14 +175,17 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::createNotifyIconMenu() {
+        L(trace, L"[Application::createNotifyIconMenu] called");
+
         auto hMenu = ::LoadMenu(hInstance, MAKEINTRESOURCE(IDR_APP_MENU));
         this->notifyIconMenu = GetSubMenu(hMenu, 0);
     }
 
     void Application::createWindow(std::wstring_view className) {
+        L(trace, L"[Application::createWindow] called with: {}", className);
+
         this->hWnd = ::CreateWindowEx(
             WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
-            //WS_EX_LAYERED,
             std::data(className),
             L"",
             WS_POPUP,
@@ -150,17 +193,15 @@ namespace YellowRectangleCyanCircle {
             0,
             0,
             0,
-            //WS_OVERLAPPEDWINDOW,
-            //CW_USEDEFAULT,
-            //CW_USEDEFAULT,
-            //CW_USEDEFAULT,
-            //CW_USEDEFAULT,
             nullptr,
             nullptr,
             this->hInstance,
             this
         );
-        if (!this->hWnd) throw UnableToCreateWindow();
+        if (!this->hWnd) {
+            L(error, "Unable to create window");
+            throw UnableToCreateWindow();
+        }
 
         ::SetLayeredWindowAttributes(
             this->hWnd,
@@ -171,6 +212,8 @@ namespace YellowRectangleCyanCircle {
 
         ::ShowWindow(this->hWnd, SW_SHOWNORMAL);
         ::UpdateWindow(this->hWnd);
+
+        L(debug, L"[Application::createWindow] success");
     }
 
     void Application::destroyNotifyIcon() {
@@ -200,6 +243,8 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::registerWindowClass(std::wstring_view className) const {
+        L(trace, L"[Application::registerWindowClass] called with: {}", className);
+
         WNDCLASSEXW wcex;
         ::RtlZeroMemory(&wcex, sizeof(WNDCLASSEXW));
 
@@ -216,8 +261,11 @@ namespace YellowRectangleCyanCircle {
         wcex.lpszClassName = std::data(className);
 
         if (!::RegisterClassEx(&wcex)) {
+            L(error, "unable to register window class");
             throw UnableToRegisterWindowClass();
         }
+
+        L(debug, L"[Application::registerWindowClass] success");
     }
 
     LRESULT CALLBACK Application::wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -293,28 +341,53 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::clearResources() {
+        L(trace, "[Application::clearResources] called");
+
         this->renderTarget = nullptr;
         this->brushCyan = nullptr;
         this->brushYellow = nullptr;
+
+        L(trace, "[Application::clearResources] success");
     }
 
     void Application::createFactory() {
+        L(trace, L"[Application::createFactory] called");
+
         CComPtr<ID2D1Factory> f;
 
         HRESULT hr = ::D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &f);
-        if (FAILED(hr)) throw COMException(hr);
+        if (FAILED(hr)) {
+            L(error, "Unable to create d2d1 factory");
+            throw COMException(hr);
+        }
 
         this->factory = f;
     }
 
     HRESULT Application::initializeResources() {
+        L(trace, "[Application::initializeResources] called");
+
         HRESULT hr = S_OK;
-        if (!this->hWnd) return hr;
-        if (!this->factory) return hr;
+        if (!this->hWnd) {
+            L(debug, "[Application::initializeResources] failed, no main window");
+            return hr;
+        }
+
+        if (!this->factory) {
+            L(debug, "[Application::initializeResources] failed, no factory");
+            this->createFactory();
+            return E_FAIL;
+        }
+
         // if already initialized - do nothing
-        if (this->renderTarget) return hr;
+        if (this->renderTarget) {
+            L(trace, "[Application::initializeResources] render target exists, do nothing");
+            return hr;
+        }
 
         auto rc = WinAPI::GetClientRect(this->hWnd);
+        L(trace, "[Application::initializeResources] main window rect: {}", rc);
+
         D2D1_SIZE_U size = D2D1::SizeU(rc.width, rc.height);
 
         hr = this->factory->CreateHwndRenderTarget(
@@ -322,22 +395,36 @@ namespace YellowRectangleCyanCircle {
             D2D1::HwndRenderTargetProperties(hWnd, size),
             &this->renderTarget
         );
-        if (FAILED(hr)) return hr;
+        if (FAILED(hr)) {
+            L(debug, "[Application::initializeResources] failed to create render target: {}", hr);
+            return hr;
+        }
 
         hr = this->renderTarget->CreateSolidColorBrush(
             D2D1::ColorF(D2D1::ColorF::Cyan),
             &this->brushCyan
         );
-        if (FAILED(hr)) return hr;
+        if (FAILED(hr)) {
+            L(debug, "[Application::initializeResources] failed to create cyan brush: {}", hr);
+            return hr;
+        }
 
         hr = this->renderTarget->CreateSolidColorBrush(
             D2D1::ColorF(D2D1::ColorF::Yellow),
             &this->brushYellow
         );
+        if (FAILED(hr)) {
+            L(debug, "[Application::initializeResources] failed to create yellow brush: {}", hr);
+            return hr;
+        }
+
+        L(debug, "[Application::initializeResources] success");
         return hr;
     }
 
     std::wstring Application::loadGameWindowName() {
+        L(trace, "[Application::loadGameWindowName] called");
+
         wchar_t buf[128];
         ::LoadString(this->hInstance, IDS_GAME_WINDOW_NAME, buf, sizeof(buf) / sizeof(wchar_t));
 
@@ -349,6 +436,8 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Application::preloadIcons() {
+        L(trace, L"[Application::preloadIcons] called");
+
         for (auto iconId : { IDI_ICON_CDRD, IDI_ICON_CDRE, IDI_ICON_CERD, IDI_ICON_CERE }) {
             this->notifyIconStateIcons[iconId] = ::LoadIcon(this->hInstance, MAKEINTRESOURCE(iconId));
         }

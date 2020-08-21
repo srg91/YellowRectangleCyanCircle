@@ -9,8 +9,6 @@ namespace YellowRectangleCyanCircle {
         const CComPtr<ID2D1HwndRenderTarget>& target,
         const CComPtr<ID2D1SolidColorBrush>& brush
     ) const {
-        if (!(target && brush)) return;
-
         D2D1_ELLIPSE ellipse = D2D1::Ellipse(
             D2D1::Point2F(
                 static_cast<float>(this->x),
@@ -30,8 +28,6 @@ namespace YellowRectangleCyanCircle {
         const CComPtr<ID2D1HwndRenderTarget>& target,
         const CComPtr<ID2D1SolidColorBrush>& brush
     ) const {
-        if (!(target && brush)) return;
-
         D2D1_RECT_F rectangle = D2D1::RectF(
             static_cast<float>(this->rect.x),
             static_cast<float>(this->rect.y),

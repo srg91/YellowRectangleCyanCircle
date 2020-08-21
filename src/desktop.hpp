@@ -1,6 +1,7 @@
 #pragma once
 
 #include "direct.hpp"
+#include "logging.hpp"
 
 #include <chrono>
 #include <memory>
@@ -41,7 +42,7 @@ namespace YellowRectangleCyanCircle {
             std::shared_ptr<DXGI_OUTDUPL_DESC>& deskDuplDesc
         );
 
-        void FormatFrameDescription(
+        HRESULT FormatFrameDescription(
             const std::shared_ptr<DXGI_OUTDUPL_DESC>& desc,
             std::shared_ptr<D3D11_TEXTURE2D_DESC>& frameDesc,
             std::shared_ptr<D3D11_TEXTURE2D_DESC>& cpuframeDesc
@@ -50,6 +51,7 @@ namespace YellowRectangleCyanCircle {
         std::vector<std::shared_ptr<DirectAdapter>> EnumAdapters(
             const std::shared_ptr<IDirect>& direct
         );
+
         HRESULT OutputByDeviceName(
             const std::shared_ptr<IDirect>& direct,
             std::wstring_view deviceName,

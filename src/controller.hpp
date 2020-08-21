@@ -4,6 +4,7 @@
 #include "detector.hpp"
 #include "game.hpp"
 #include "hook.hpp"
+#include "logging.hpp"
 #include "screen.hpp"
 #include "window.hpp"
 
@@ -30,6 +31,7 @@ namespace YellowRectangleCyanCircle {
 
         void initializeContext();
         bool isAnyDetectorEnabled();
+        void onException();
         void onTimer();
         void updateTimer();
 

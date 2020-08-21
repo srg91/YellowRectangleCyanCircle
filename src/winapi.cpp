@@ -58,15 +58,15 @@ namespace YellowRectangleCyanCircle::WinAPI {
     DisplayInfo GetWindowDisplayInfo(HWND hWnd) {
         DisplayInfo di = {};
 
-        if (!hWnd) return di;
-
         HMONITOR m = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+        if (!m) m = ::MonitorFromWindow(0, MONITOR_DEFAULTTONEAREST);
+
         MONITORINFOEX mi;
         mi.cbSize = sizeof(mi);
 
         if (::GetMonitorInfo(m, &mi)) {
             di.name = mi.szDevice;
-            di.area = Rect::FromRECT(mi.rcWork);
+            di.area = Rect::FromRECT(mi.rcMonitor);
         }
         return di;
     }

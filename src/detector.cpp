@@ -2,13 +2,31 @@
 
 namespace YellowRectangleCyanCircle {
     void AreaDetector::Perform(std::shared_ptr<IContext> context) {
-        if (!context->IsDetectorEnabled(this->type)) return;
+        L(trace, "[AreaDetector::Perform] called");
+
+        if (!context) {
+            L(debug, "[AreaDetector::Perform] failed, no context");
+            return;
+        }
+
+        if (!context->IsDetectorEnabled(this->type)) {
+            L(trace, "[AreaDetector::Perform] skip disabled");
+            return;
+        }
 
         bool isKeypadEnabled = context->IsDetectorEnabled(DetectorType::Keypad);
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
-        if (!(isKeypadEnabled || isFingerprintEnabled)) return;
+        if (!(isKeypadEnabled || isFingerprintEnabled)) {
+            L(trace, "[AreaDetector::Perform] skip, no one detector enabled");
+            return;
+        }
 
-        auto image = Mat(context->GetScreenImage()).clone();
+        auto image = context->GetScreenImage();
+        if (std::empty(image)) {
+            L(debug, "[AreaDetector::Perform] got empty screen, do nothing");
+            return;
+        }
+        image = image.clone();
 
         cv::blur(image, image, cv::Size(2, 4), cv::Point(0, 0));
         cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
@@ -23,6 +41,8 @@ namespace YellowRectangleCyanCircle {
 
         std::vector<std::vector<cv::Point>> contours;
         cv::findContours(image, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+        L(trace, "[AreaDetector::Perform] found countours count: {}", std::size(contours));
 
         for (const auto& origContour : contours) {
             bool isFingerWindowsFound =
@@ -99,22 +119,29 @@ namespace YellowRectangleCyanCircle {
             }
         }
 
+        L(trace, "[AreaDetector::Perform] keypad rect: [{}]", keypadRect);
+        L(trace, "[AreaDetector::Perform] fingerprint rects: [{}] [{}]", fpRect, fppRect);
+
         if (isKeypadEnabled && !keypadRect.empty()) {
+            L(debug, "[AreaDetector::Perform] found keypad working area: {}", keypadRect);
+
             context->SetCurrentDetector(DetectorType::Keypad);
             context->SetWorkingArea(keypadRect);
-
-            Mat res;
-            cv::cvtColor(image, res, cv::COLOR_GRAY2BGR);
-            cv::rectangle(res, keypadRect, cv::Scalar(0, 0, 255), 2);
         }
         else if (isFingerprintEnabled && !(fpRect.empty() || fppRect.empty())) {
-            context->SetCurrentDetector(DetectorType::Fingerprint);
-            context->SetWorkingArea(cv::Rect(
+            auto area = cv::Rect(
                 cv::Point(fppRect.x, fpRect.y),
                 cv::Point(fpRect.br().x, fppRect.br().y)
-            ));
+            );
+
+            L(debug, "[AreaDetector::Perform] found fingeprint working area: {}", area);
+
+            context->SetCurrentDetector(DetectorType::Fingerprint);
+            context->SetWorkingArea(area);
         }
         else {
+            L(debug, "[AreaDetector::Perform] not found any area, clear shapes and counters");
+
             context->ClearShapes(DetectorType::Fingerprint);
             context->ClearShapes(DetectorType::Keypad);
 
@@ -124,12 +151,39 @@ namespace YellowRectangleCyanCircle {
     }
 
     void FingerprintDetector::Perform(std::shared_ptr<IContext> context) {
-        if (!context->IsDetectorEnabled(this->type)) return;
-        if (context->GetCurrentDetector() != this->type) return;
-        if (context->GetWorkingArea().empty()) return;
-        if (std::size(context->GetShapes(this->type)) > 0) return;
+        L(trace, "[FingerprintDetector::Perform] called");
 
-        auto image = Mat(context->GetScreenImage());
+        if (!context) {
+            L(debug, "[FingerprintDetector::Perform] failed, no context");
+            return;
+        }
+
+        if (!context->IsDetectorEnabled(this->type)) {
+            L(trace, "[FingerprintDetector::Perform] skip disabled");
+            return;
+        }
+
+        if (context->GetCurrentDetector() != this->type) {
+            L(trace, "[FingerprintDetector::Perform] skip not current");
+            return;
+        }
+
+        if (context->GetWorkingArea().empty()) {
+            L(debug, "[FingerprintDetector::Perform] failed, empty working area");
+            return;
+        }
+
+        if (std::size(context->GetShapes(this->type)) > 0) {
+            L(trace, "[FingerprintDetector::Perform] skip already found");
+            return;
+        }
+
+        auto image = context->GetScreenImage();
+        if (std::empty(image)) {
+            L(debug, "[FingerprintDetector::Perform] got empty screen, do nothing");
+            return;
+        }
+
         image = image(context->GetWorkingArea()).clone();
         cv::blur(image, image, cv::Size(2, 2), cv::Point(0, 0));
         cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
@@ -144,6 +198,8 @@ namespace YellowRectangleCyanCircle {
 
         std::vector<std::vector<cv::Point>> contours;
         cv::findContours(image, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
+
+        L(trace, "[FingerprintDetector::Perform] found contours count: {}", std::size(contours));
 
         for (const auto& origContour : contours) {
             if (std::size(foundParts) >= 8) break;
@@ -179,10 +235,20 @@ namespace YellowRectangleCyanCircle {
             }
         }
 
-        if (std::size(foundParts) < 8) return;
+        if (std::size(foundParts) < 8) {
+            L(debug, "[FingerprintDetector::Perform] found only {} parts, do nothing", std::size(foundParts));
+            return;
+        }
 
         std::vector<std::shared_ptr<IShape>> resultParts;
         for (const auto& part : foundParts) {
+            if (part.empty()) {
+                L(trace, "[FingerprintDetector::Perform] found empty part: {}", part);
+                continue;
+            }
+
+            L(trace, "[FingerprintDetector::Perform] part: {}", part);
+
             auto fppImage = image(part).clone();
             cv::resize(fppImage, fppImage, cv::Size(0, 0), 1.285, 1.285, cv::INTER_LINEAR);
 
@@ -193,6 +259,8 @@ namespace YellowRectangleCyanCircle {
             cv::Point minLoc, maxLoc;
             cv::minMaxLoc(matchResult, &minVal, &maxVal, &minLoc, &maxLoc);
 
+            L(trace, "[FingerprintDetector::Perform] match template: minVal({}) maxVal({}) minLoc({}) maxLoc({})", minVal, maxVal, minLoc, maxLoc);
+
             if (maxVal > 0.75f) {
                 resultParts.push_back(
                     std::make_shared<Rectangle>(part)
@@ -200,7 +268,14 @@ namespace YellowRectangleCyanCircle {
             }
         }
 
-        if (std::size(resultParts) == 4) context->SetShapes(this->type, resultParts);
+        auto matchedCount = std::size(resultParts);
+        if (matchedCount == 4) {
+            L(debug, "[FingerprintDetector::Perform] matched");
+            context->SetShapes(this->type, resultParts);
+        }
+        else {
+            L(debug, "[FingerprintDetector::Perform] incorrect match, count: {}", matchedCount);
+        }
     }
 
     const std::array<std::unordered_set<int>, 2> KeypadDetector::table({ {
@@ -209,20 +284,55 @@ namespace YellowRectangleCyanCircle {
     } });
 
     void KeypadDetector::Perform(std::shared_ptr<IContext> context) {
-        if (!context->IsDetectorEnabled(this->type)) return;
-        if (context->GetCurrentDetector() != this->type) return;
-        if (context->GetWorkingArea().empty()) return;
-        if (std::size(context->GetShapes(this->type)) > 0) return;
+        L(trace, "[KeypadDetector::Perform] called");
 
-        if (context->KeypadGetEmptyRunCounter() >= context->KeypadMaxEmptyCirclesInRow
-            && std::size(context->KeypadGetShapesCache()) > 0) {
+        if (!context) {
+            L(debug, "[KeypadDetector::Perform] failed, no context");
+            return;
+        }
+
+        if (!context->IsDetectorEnabled(this->type)) {
+            L(trace, "[KeypadDetector::Perform] skip disabled");
+            return;
+        }
+
+        if (context->GetCurrentDetector() != this->type) {
+            L(trace, "[KeypadDetector::Perform] skip not current");
+            return;
+        }
+
+        if (context->GetWorkingArea().empty()) {
+            L(debug, "[KeypadDetector::Perform] failed, empty working area");
+            return;
+        }
+
+        if (std::size(context->GetShapes(this->type)) > 0) {
+            L(trace, "[KeypadDetector::Perform] skip already found");
+            return;
+        }
+
+        auto emptyRunCounter = context->KeypadGetEmptyRunCounter();
+        auto shapesCacheSize = std::size(context->KeypadGetShapesCache());
+
+        L(trace, "[KeypadDetector::Perform] Empty run counter: {}", emptyRunCounter);
+        L(trace, "[KeypadDetector::Perform] Shapes cache size: {}", shapesCacheSize);
+
+        if (emptyRunCounter >= context->KeypadMaxEmptyCirclesInRow && shapesCacheSize > 0) {
+            L(debug, "[KeypadDetector::Perform] Found {} empty runs, fill shapes", emptyRunCounter);
+
             context->SetShapes(this->type, context->KeypadGetShapesCache());
             context->KeypadClearShapesCache();
             context->KeypadClearEmptyRunCounter();
             return;
         }
 
-        cv::Mat image = context->GetScreenImage()(context->GetWorkingArea()).clone();
+        auto image = context->GetScreenImage();
+        if (std::empty(image)) {
+            L(debug, "[KeypadDetector::Perform] got empty screen, do nothing");
+            return;
+        }
+
+        image = image(context->GetWorkingArea()).clone();
         cv::blur(image, image, cv::Size(3, 3), cv::Point(0, 0));
         cv::threshold(image, image, 100, 255, cv::THRESH_BINARY);
 
@@ -232,6 +342,8 @@ namespace YellowRectangleCyanCircle {
         std::uint8_t* imagePtr = image.data;
 
         std::vector<std::shared_ptr<IShape>> foundCircles;
+        L(trace, "[KeypadDetector::Perform] found circles count: {}", std::size(foundCircles));
+
         for (const auto& circle : circles) {
             unsigned int x = cvRound(circle[0]), y = cvRound(circle[1]);
             unsigned int r = cvRound(circle[2]);
@@ -258,9 +370,12 @@ namespace YellowRectangleCyanCircle {
         }
 
         auto foundCount = std::size(foundCircles);
-        if (foundCount == 0)
+        if (foundCount == 0) {
+            L(debug, "[KeypadDetector::Perform] empty run");
             context->KeypadRegisterEmptyRun();
+        }
         else if (foundCount >= 6) {
+            L(debug, "[KeypadDetector::Perform] circles found [{}], save cache", foundCount);
             context->KeypadSetShapesCache(foundCircles);
             context->KeypadClearEmptyRunCounter();
         }

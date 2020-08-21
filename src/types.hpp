@@ -9,6 +9,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
+#include <spdlog/fmt/ostr.h>
 #include <Windows.h>
 
 namespace YellowRectangleCyanCircle {
@@ -56,5 +57,11 @@ namespace YellowRectangleCyanCircle {
 }
 
 namespace std {
-    std::uint8_t* data(YellowRectangleCyanCircle::Mat mat);
+    uint8_t* data(YellowRectangleCyanCircle::Mat& mat);
+
+    bool empty(const YellowRectangleCyanCircle::Mat& mat);
+    bool empty(const YellowRectangleCyanCircle::Rect::Rect& r);
+
+    ostream& operator<<(ostream& os, const YellowRectangleCyanCircle::Rect::Rect& r);
+    wostream& operator<<(wostream& os, const YellowRectangleCyanCircle::Rect::Rect& r);
 }

@@ -2,12 +2,25 @@
 
 namespace YellowRectangleCyanCircle {
     void WindowUpdater::Perform(std::shared_ptr<IContext> context) {
+        L(trace, "[WindowUpdater::Perform] called");
+
+        if (!context) {
+            L(debug, "[WindowUpdater::Perform] failed, no context");
+            return;
+        }
+
         auto hWnd = context->GetWindowHandle();
-        if (!hWnd) return;
+        if (!hWnd) {
+            L(debug, "[WindowUpdater::Perform] failed, no main window");
+            return;
+        }
 
         bool isKeypadEnabled = context->IsDetectorEnabled(DetectorType::Keypad);
         bool isFingerprintEnabled = context->IsDetectorEnabled(DetectorType::Fingerprint);
-        if (!(isKeypadEnabled || isFingerprintEnabled)) return;
+        if (!(isKeypadEnabled || isFingerprintEnabled)) {
+            L(trace, "[WindowUpdater::Perform] skip, no one detector enabled");
+            return;
+        }
 
         auto prevArea = context->GetPreviousWorkingArea();
         auto prevDisplayRect = context->GetPreviousDisplayRect();
@@ -33,19 +46,29 @@ namespace YellowRectangleCyanCircle {
 
         bool shouldMoveWindow = xDiff > 5 || yDiff > 5 || wDiff > 5 || hDiff > 5;
 
-        if (shouldMoveWindow)
+        L(trace, "[WindowUpdater::Perform] working area: [{}] => [{}]", prevArea, area);
+        L(trace, "[WindowUpdater::Perform] display rect: [{}] => [{}]", prevDisplayRect, displayRect);
+        L(trace, "[WindowUpdater::Perform] game rect: [{}] => [{}]", prevGameRect, gameRect);
+
+        if (shouldMoveWindow) {
+            L(debug, "[WindowUpdater::Perform] move main window");
             ::MoveWindow(hWnd, newX, newY, area.width, area.height, false);
+        }
 
         bool shouldRedraw = shouldMoveWindow;
         if (!shouldRedraw) {
             for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
                 if (context->IsDetectorEnabled(dt) && context->IsShapesChanged(dt)) {
+                    L(trace, "[WindowUpdater::Perform] detector [{}] has shapes changed", dt);
                     shouldRedraw = true;
                     break;
                 }
             }
         }
 
-        if (shouldRedraw) ::InvalidateRect(hWnd, nullptr, false);
+        if (shouldRedraw) {
+            L(debug, "[WindowUpdater::Perform] redraw main window");
+            ::InvalidateRect(hWnd, nullptr, false);
+        }
     }
 }

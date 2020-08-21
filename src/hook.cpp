@@ -1,16 +1,6 @@
 #include "hook.hpp"
 
 namespace YellowRectangleCyanCircle {
-    HookAlreadyRegistered::HookAlreadyRegistered(DWORD eventId) :
-        eventId(eventId)
-    {}
-
-    const char* HookAlreadyRegistered::what() const {
-        std::ostringstream message;
-        message << "Unable to register a hook with ID " << this->eventId << ": already exists";
-        return std::data(message.str());
-    }
-
     std::unordered_map<DWORD, Hook*> Hook::instances;
     std::shared_mutex Hook::instancesMutex;
     std::unordered_map<DWORD, std::atomic<bool>> Hook::callbackBreaker;
@@ -38,6 +28,15 @@ namespace YellowRectangleCyanCircle {
         hWndStrict(hWndStrict),
         assignToWindow(assignToWindow)
     {
+        L(
+            trace,
+            "[Hook::Hook] called with: eventId({}), hWnd({}), hWndStrict({}), assignToWindow({})",
+            eventId,
+            reinterpret_cast<std::size_t>(hWnd),
+            hWndStrict,
+            assignToWindow
+        );
+
         this->registerInstance(eventId, this);
     }
 

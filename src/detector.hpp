@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interface.hpp"
+#include "logging.hpp"
 #include "shapes.hpp"
 #include "types.hpp"
 

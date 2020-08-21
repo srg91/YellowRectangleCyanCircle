@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interface.hpp"
+#include "logging.hpp"
 
 namespace YellowRectangleCyanCircle {
     struct WindowUpdater : public IAction {

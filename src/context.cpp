@@ -16,6 +16,8 @@ namespace YellowRectangleCyanCircle {
     }
 
     void Context::ClearOnTick() {
+        L(trace, "[Controller::onTimer] called");
+
         auto lock = this->lockOnWrite();
         for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
             this->shapesChanged[dt] = false;
@@ -154,20 +156,28 @@ namespace YellowRectangleCyanCircle {
     };
 
     void Context::SetShapes(DetectorType dt, const std::vector<std::shared_ptr<IShape>>& shapes) {
+        std::vector <std::shared_ptr<IShape>> prevShapes;
+
         {
             auto lock = this->lockOnWrite();
+            prevShapes = this->detectorShapes[dt];
             this->detectorShapes[dt] = shapes;
         }
-        this->SetShapesChanged(dt, true);
+        if (prevShapes != shapes) this->SetShapesChanged(dt, true);
     }
 
     void Context::ClearShapes(DetectorType dt) {
+        bool isShapesChanged = false;
         {
             auto lock = this->lockOnWrite();
             if (this->detectorShapes.find(dt) == detectorShapes.end()) return;
-            this->detectorShapes.at(dt).clear();
+
+            if (std::size(this->detectorShapes.at(dt)) > 0) {
+                isShapesChanged = true;
+                this->detectorShapes.at(dt).clear();
+            }
         }
-        this->SetShapesChanged(dt, true);
+        if (isShapesChanged) this->SetShapesChanged(dt, true);
     }
 
     bool Context::IsShapesChanged(DetectorType dt) const {

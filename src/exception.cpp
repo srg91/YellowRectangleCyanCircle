@@ -31,4 +31,14 @@ namespace YellowRectangleCyanCircle {
     const char* WindowsException::what() const throw() {
         return std::data(this->message);
     }
+
+    HookAlreadyRegistered::HookAlreadyRegistered(DWORD eventId) :
+        eventId(eventId)
+    {}
+
+    const char* HookAlreadyRegistered::what() const {
+        std::ostringstream message;
+        message << "Unable to register a hook with ID " << this->eventId << ": already exists";
+        return std::data(message.str());
+    }
 }

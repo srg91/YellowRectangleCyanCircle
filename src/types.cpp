@@ -30,7 +30,23 @@ namespace YellowRectangleCyanCircle {
 
 namespace std
 {
-    std::uint8_t* data(YellowRectangleCyanCircle::Mat mat) {
+    uint8_t* data(YellowRectangleCyanCircle::Mat& mat) {
         return mat.data;
+    }
+
+    bool empty(const YellowRectangleCyanCircle::Mat& mat) {
+        return mat.empty();
+    }
+
+    bool empty(const YellowRectangleCyanCircle::Rect::Rect& r) {
+        return r.empty();
+    }
+
+    std::ostream& operator<<(std::ostream& os, const YellowRectangleCyanCircle::Rect::Rect& r) {
+        return os << "Rect(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
+    }
+
+    std::wostream& operator<<(std::wostream& os, const YellowRectangleCyanCircle::Rect::Rect& r) {
+        return os << "Rect(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
     }
 }

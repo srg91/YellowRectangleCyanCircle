@@ -26,4 +26,14 @@ namespace YellowRectangleCyanCircle {
     struct ApplicationException : public WindowsException {};
     struct UnableToRegisterWindowClass : public ApplicationException {};
     struct UnableToCreateWindow : public ApplicationException {};
+
+    // Custom exceptions
+    class HookAlreadyRegistered : public std::exception {
+    public:
+        HookAlreadyRegistered(DWORD eventId);
+
+        const char* what() const;
+    private:
+        DWORD eventId;
+    };
 }

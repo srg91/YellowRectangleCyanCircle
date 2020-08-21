@@ -2,6 +2,7 @@
 
 #include "controller.hpp"
 #include "exception.hpp"
+#include "logging.hpp"
 #include "resource.hpp"
 #include "types.hpp"
 #include "winapi.hpp"

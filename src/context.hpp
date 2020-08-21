@@ -1,6 +1,7 @@
 #pragma once
 
 #include "interface.hpp"
+#include "logging.hpp"
 
 #include <unordered_map>
 #include <vector>
