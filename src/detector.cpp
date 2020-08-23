@@ -333,11 +333,24 @@ namespace YellowRectangleCyanCircle {
         }
 
         image = image(context->GetWorkingArea()).clone();
+
         cv::blur(image, image, cv::Size(3, 3), cv::Point(0, 0));
         cv::threshold(image, image, 100, 255, cv::THRESH_BINARY);
 
+        auto gameHeight = context->GetGameRect().height;
+
         std::vector<cv::Vec3f> circles;
-        cv::HoughCircles(image, circles, cv::HOUGH_GRADIENT, 1, 80, 100, 6, 15, 50);
+        cv::HoughCircles(
+            image,
+            circles,
+            cv::HOUGH_GRADIENT,
+            1,
+            std::lround(gameHeight * 0.111f - 19.358f),
+            100,
+            6,
+            std::lround(gameHeight * 0.0332f - 0.808f),
+            std::lround(gameHeight * 0.0332f + 9.192f)
+        );
 
         std::uint8_t* imagePtr = image.data;
 
