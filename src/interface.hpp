@@ -10,7 +10,8 @@ namespace YellowRectangleCyanCircle {
     struct IShape {
         virtual void OnDraw(
             const CComPtr<ID2D1HwndRenderTarget>& target,
-            const CComPtr<ID2D1SolidColorBrush>& brush
+            const CComPtr<ID2D1SolidColorBrush>& brush,
+            Point scale
         ) const = 0;
     };
 
@@ -28,11 +29,10 @@ namespace YellowRectangleCyanCircle {
         virtual void SetGameRect(const Rect::Rect& rect) = 0;
         virtual const Rect::Rect& GetPreviousGameRect() const = 0;
 
-        // Display information
-        virtual const Rect::Rect& GetDisplayRect() const = 0;
-        virtual void SetDisplayRect(const Rect::Rect& rect) = 0;
-        virtual const Rect::Rect& GetPreviousDisplayRect() const = 0;
-
+        // Desktop information
+        virtual const DesktopInfo& GetDesktopInfo() const = 0;
+        virtual void SetDesktopInfo(const DesktopInfo& info) = 0;
+        virtual const DesktopInfo& GetPreviousDesktopInfo() const = 0;
         // Detector information
         virtual bool IsDetectorEnabled(DetectorType dt) const = 0;
         virtual void SetDetectorEnabled(DetectorType dt, bool value) = 0;
@@ -74,6 +74,14 @@ namespace YellowRectangleCyanCircle {
 
     struct IAction {
         virtual void Perform(std::shared_ptr<IContext> context) = 0;
+    };
+
+    struct IDesktopDuplicator {
+        virtual bool IsAvailable() const = 0;
+        virtual DesktopInfo GetDesktopInfo() const = 0;
+
+        virtual bool Duplicate(void* data) = 0;
+        virtual bool SetDisplay(std::wstring_view displayName) = 0;
     };
 
     struct IHook {

@@ -26,6 +26,16 @@ namespace YellowRectangleCyanCircle {
             );
         }
     }
+
+    DesktopInfo::DesktopInfo(Rect::Rect rect, Point scale) :
+        DesktopInfo(L"", rect, scale)
+    {}
+
+    DesktopInfo::DesktopInfo(std::wstring_view name, Rect::Rect rect, Point scale) :
+        Name(name),
+        Rect(rect),
+        Scale(scale)
+    {}
 }
 
 namespace std
@@ -48,5 +58,13 @@ namespace std
 
     std::wostream& operator<<(std::wostream& os, const YellowRectangleCyanCircle::Rect::Rect& r) {
         return os << "Rect(" << r.x << ", " << r.y << ", " << r.width << ", " << r.height << ")";
+    }
+
+    std::ostream& operator<<(std::ostream& os, const YellowRectangleCyanCircle::Point& p) {
+        return os << "Point(" << p.x << ", " << p.y << ")";
+    }
+
+    std::wostream& operator<<(std::wostream& os, const YellowRectangleCyanCircle::Point& p) {
+        return os << "Point(" << p.x << ", " << p.y << ")";
     }
 }

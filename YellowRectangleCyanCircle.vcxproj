@@ -159,6 +159,9 @@
     <ClCompile Include="src\context.cpp" />
     <ClCompile Include="src\controller.cpp" />
     <ClCompile Include="src\desktop.cpp" />
+    <ClCompile Include="src\desktop.d3d11.cpp" />
+    <ClCompile Include="src\desktop.d3d9.cpp" />
+    <ClCompile Include="src\desktop.gdi.cpp" />
     <ClCompile Include="src\detector.cpp" />
     <ClCompile Include="src\direct.cpp" />
     <ClCompile Include="src\exception.cpp" />
@@ -177,6 +180,9 @@
     <ClInclude Include="src\application.hpp" />
     <ClInclude Include="src\context.hpp" />
     <ClInclude Include="src\controller.hpp" />
+    <ClInclude Include="src\desktop.d3d11.hpp" />
+    <ClInclude Include="src\desktop.d3d9.hpp" />
+    <ClInclude Include="src\desktop.gdi.hpp" />
     <ClInclude Include="src\desktop.hpp" />
     <ClInclude Include="src\detector.hpp" />
     <ClInclude Include="src\direct.hpp" />
@@ -206,6 +212,9 @@
     <Image Include="icon\NotifyIcon_CDRE.ico" />
     <Image Include="icon\NotifyIcon_CERD.ico" />
     <Image Include="icon\NotifyIcon_CERE.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="DeclareDPIAware.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

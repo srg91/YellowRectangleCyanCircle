@@ -23,20 +23,20 @@ namespace YellowRectangleCyanCircle {
         }
 
         auto prevArea = context->GetPreviousWorkingArea();
-        auto prevDisplayRect = context->GetPreviousDisplayRect();
+        auto prevDesktop = context->GetPreviousDesktopInfo();
         // Convert previous game rect position from absolute to relative to previous display
-        auto prevGameRect = Rect::ClampROI(context->GetPreviousGameRect(), prevDisplayRect);
+        auto prevGameRect = Rect::ClampROI(context->GetPreviousGameRect(), prevDesktop.Rect);
 
         auto area = context->GetWorkingArea();
-        auto displayRect = context->GetDisplayRect();
+        auto desktop = context->GetDesktopInfo();
         // Convert game rect position from absolute to relative to current display
-        auto gameRect = Rect::ClampROI(context->GetGameRect(), displayRect);
+        auto gameRect = Rect::ClampROI(context->GetGameRect(), desktop.Rect);
 
-        auto prevX = prevDisplayRect.x + prevGameRect.x + prevArea.x;
-        auto prevY = prevDisplayRect.y + prevGameRect.y + prevArea.y;
+        auto prevX = prevDesktop.Rect.x + prevGameRect.x + prevArea.x;
+        auto prevY = prevDesktop.Rect.y + prevGameRect.y + prevArea.y;
 
-        auto newX = displayRect.x + gameRect.x + area.x;
-        auto newY = displayRect.y + gameRect.y + area.y;
+        auto newX = desktop.Rect.x + gameRect.x + area.x;
+        auto newY = desktop.Rect.y + gameRect.y + area.y;
 
         int xDiff = std::abs(prevX - newX);
         int yDiff = std::abs(prevY - newY);
@@ -47,12 +47,24 @@ namespace YellowRectangleCyanCircle {
         bool shouldMoveWindow = xDiff > 5 || yDiff > 5 || wDiff > 5 || hDiff > 5;
 
         L(trace, "[WindowUpdater::Perform] working area: [{}] => [{}]", prevArea, area);
-        L(trace, "[WindowUpdater::Perform] display rect: [{}] => [{}]", prevDisplayRect, displayRect);
+        L(trace, "[WindowUpdater::Perform] display rect: [{}] => [{}]", prevDesktop.Rect, desktop.Rect);
         L(trace, "[WindowUpdater::Perform] game rect: [{}] => [{}]", prevGameRect, gameRect);
 
         if (shouldMoveWindow) {
-            L(debug, "[WindowUpdater::Perform] move main window");
-            ::MoveWindow(hWnd, newX, newY, area.width, area.height, false);
+            float sx = desktop.Scale.x && desktop.Scale.x != 100 ? (desktop.Scale.x / 100.0f) : 1;
+            float sy = desktop.Scale.y && desktop.Scale.y != 100 ? (desktop.Scale.y / 100.0f) : 1;
+
+            L(trace, "[WindowUpdater::Perform] position: [{}, {}] => [{}, {}]", prevX, prevY, newX, newY);
+            L(trace, "[WindowUpdater::Perform] use scale: {}x{}", sx, sy);
+
+            int x = static_cast<int>(newX / sx);
+            int y = static_cast<int>(newY / sy);
+            int w = static_cast<int>(area.width / sx);
+            int h = static_cast<int>(area.height / sy);
+
+            L(debug, "[WindowUpdater::Perform] move main window to Rect({}, {}, {}, {})", x, y, w, h);
+
+            ::MoveWindow(hWnd, x, y, w, h, false);
         }
 
         bool shouldRedraw = shouldMoveWindow;

@@ -21,6 +21,7 @@ namespace YellowRectangleCyanCircle {
     };
 
     using Mat = cv::Mat;
+    using Point = cv::Point;
 
     namespace Rect {
         using Rect = cv::Rect;
@@ -54,6 +55,16 @@ namespace YellowRectangleCyanCircle {
     protected:
         CComPtr<T> object;
     };
+
+    struct DesktopInfo {
+        std::wstring Name;
+        Rect::Rect Rect;
+        // In handreds, like 125 as 1.25% scale
+        Point Scale;
+
+        DesktopInfo(Rect::Rect rect = Rect::Rect(), Point scale = Point(100, 100));
+        DesktopInfo(std::wstring_view name, Rect::Rect rect = Rect::Rect(), Point scale = Point(100, 100));
+    };
 }
 
 namespace std {
@@ -64,4 +75,7 @@ namespace std {
 
     ostream& operator<<(ostream& os, const YellowRectangleCyanCircle::Rect::Rect& r);
     wostream& operator<<(wostream& os, const YellowRectangleCyanCircle::Rect::Rect& r);
+
+    ostream& operator<<(ostream& os, const YellowRectangleCyanCircle::Point& p);
+    wostream& operator<<(wostream& os, const YellowRectangleCyanCircle::Point& p);
 }

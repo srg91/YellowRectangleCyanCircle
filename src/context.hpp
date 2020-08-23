@@ -22,10 +22,10 @@ namespace YellowRectangleCyanCircle {
         void SetGameRect(const Rect::Rect& rect) override final;
         const Rect::Rect& GetPreviousGameRect() const override final;
 
-        // Display information
-        const Rect::Rect& GetDisplayRect() const override final;
-        void SetDisplayRect(const Rect::Rect& rect) override final;
-        const Rect::Rect& GetPreviousDisplayRect() const override final;
+        // Desktop information
+        const DesktopInfo& GetDesktopInfo() const override final;
+        void SetDesktopInfo(const DesktopInfo& info) override final;
+        const DesktopInfo& GetPreviousDesktopInfo() const override final;
 
         // Detector information
         bool IsDetectorEnabled(DetectorType dt) const override final;
@@ -69,8 +69,8 @@ namespace YellowRectangleCyanCircle {
         Rect::Rect gameRect;
         Rect::Rect prevGameRect;
 
-        Rect::Rect displayRect;
-        Rect::Rect prevDisplayRect;
+        DesktopInfo desktopInfo;
+        DesktopInfo prevDesktopInfo;
 
         std::unordered_map<DetectorType, bool> detectorStates;
 

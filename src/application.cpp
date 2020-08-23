@@ -122,11 +122,14 @@ namespace YellowRectangleCyanCircle {
 
         auto controller = this->controller;
         if (controller) {
+            auto scale = this->getCurrentScale();
+
             for (auto dt : { DetectorType::Fingerprint, DetectorType::Keypad }) {
                 controller->DrawShapes(
                     dt,
                     this->renderTarget,
-                    dt == DetectorType::Fingerprint ? this->brushYellow : this->brushCyan
+                    dt == DetectorType::Fingerprint ? this->brushYellow : this->brushCyan,
+                    scale
                 );
             }
         }
@@ -138,7 +141,7 @@ namespace YellowRectangleCyanCircle {
                 this->clearResources();
             }
             else {
-                L(debug, "[Application::OnPaint] end draw failed: {}", hr);
+                L(debug, "[Application::OnPaint] end draw failed: {:#x}", static_cast<unsigned int>(hr));
             }
         }
 
@@ -396,7 +399,7 @@ namespace YellowRectangleCyanCircle {
             &this->renderTarget
         );
         if (FAILED(hr)) {
-            L(debug, "[Application::initializeResources] failed to create render target: {}", hr);
+            L(debug, "[Application::initializeResources] failed to create render target: {:#x}", static_cast<unsigned int>(hr));
             return hr;
         }
 
@@ -405,7 +408,7 @@ namespace YellowRectangleCyanCircle {
             &this->brushCyan
         );
         if (FAILED(hr)) {
-            L(debug, "[Application::initializeResources] failed to create cyan brush: {}", hr);
+            L(debug, "[Application::initializeResources] failed to create cyan brush: {:#x}", static_cast<unsigned int>(hr));
             return hr;
         }
 
@@ -414,12 +417,37 @@ namespace YellowRectangleCyanCircle {
             &this->brushYellow
         );
         if (FAILED(hr)) {
-            L(debug, "[Application::initializeResources] failed to create yellow brush: {}", hr);
+            L(debug, "[Application::initializeResources] failed to create yellow brush: {:#x}", static_cast<unsigned int>(hr));
             return hr;
         }
 
         L(debug, "[Application::initializeResources] success");
         return hr;
+    }
+
+    Point Application::getCurrentScale() {
+        L(trace, "[Application::getCurrentScale] called");
+
+        auto scale = Point(100, 100);
+
+        if (!this->renderTarget) {
+            L(debug, "[Application::getCurrentScale] failed, no render target, return default scale");
+            return scale;
+        }
+
+        float dx = 0, dy = 0;
+        this->renderTarget->GetDpi(&dx, &dy);
+        if (!dx) dx = 96;
+        if (!dy) dy = 96;
+
+        scale = Point(
+            static_cast<int>(100 * dx) / 96,
+            static_cast<int>(100 * dy) / 96
+        );
+
+        L(debug, "[Application::getCurrentScale] success, scale: {}", scale);
+
+        return scale;
     }
 
     std::wstring Application::loadGameWindowName() {

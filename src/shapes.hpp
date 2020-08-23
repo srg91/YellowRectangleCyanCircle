@@ -10,7 +10,8 @@ namespace YellowRectangleCyanCircle {
 
         void OnDraw(
             const CComPtr<ID2D1HwndRenderTarget>& target,
-            const CComPtr<ID2D1SolidColorBrush>& brush
+            const CComPtr<ID2D1SolidColorBrush>& brush,
+            Point scale
         ) const override final;
     private:
         int x, y, radius;
@@ -22,7 +23,8 @@ namespace YellowRectangleCyanCircle {
 
         void OnDraw(
             const CComPtr<ID2D1HwndRenderTarget>& target,
-            const CComPtr<ID2D1SolidColorBrush>& brush
+            const CComPtr<ID2D1SolidColorBrush>& brush,
+            Point scale
         ) const override final;
     private:
         Rect::Rect rect;

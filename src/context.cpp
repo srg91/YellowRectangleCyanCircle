@@ -52,20 +52,20 @@ namespace YellowRectangleCyanCircle {
         return this->prevGameRect;
     }
 
-    const Rect::Rect& Context::GetDisplayRect() const {
+    const DesktopInfo& Context::GetDesktopInfo() const {
         auto lock = this->lockOnRead();
-        return this->displayRect;
+        return this->desktopInfo;
     };
 
-    void Context::SetDisplayRect(const Rect::Rect& rect) {
+    void Context::SetDesktopInfo(const DesktopInfo& info) {
         auto lock = this->lockOnWrite();
-        this->prevDisplayRect = this->displayRect;
-        this->displayRect = rect;
+        this->prevDesktopInfo = this->desktopInfo;
+        this->desktopInfo = info;
     };
 
-    const Rect::Rect& Context::GetPreviousDisplayRect() const {
+    const DesktopInfo& Context::GetPreviousDesktopInfo() const {
         auto lock = this->lockOnRead();
-        return this->prevDisplayRect;
+        return this->prevDesktopInfo;
     };
 
     bool Context::IsDetectorEnabled(DetectorType dt) const {

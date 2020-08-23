@@ -53,6 +53,7 @@ namespace YellowRectangleCyanCircle {
         void clearResources();
         void createFactory();
         HRESULT initializeResources();
+        Point getCurrentScale();
 
         std::shared_ptr<Controller> controller;
         std::wstring loadGameWindowName();

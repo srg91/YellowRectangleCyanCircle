@@ -50,15 +50,16 @@ namespace YellowRectangleCyanCircle {
 
         std::shared_lock read(this->desktopMutex);
 
-        auto desktopWidth = this->desktop->GetWidth();
-        auto desktopHeight = this->desktop->GetHeight();
-        L(trace, "[Screen::Perform] current duplication desktop size: {}x{}", desktopWidth, desktopHeight);
+        auto desktopInfo = this->desktop->GetInfo();
+        context->SetDesktopInfo(desktopInfo);
 
-        context->SetDisplayRect(this->currentDisplay.area);
-        L(trace, "[Screen::Perform] current display area: {}", this->currentDisplay.area);
+        L(trace, "[Screen::Perform] current duplication desktop: {}", desktopInfo.Rect);
 
-        Mat mat(this->desktop->GetHeight(), this->desktop->GetWidth(), CV_8UC4);
-        this->desktop->Duplicate(std::data(mat));
+        Mat mat(desktopInfo.Rect.height, desktopInfo.Rect.width, CV_8UC4);
+        if (!this->desktop->Duplicate(std::data(mat))) {
+            L(debug, "[Screen::Perform] unable to perform desktop duplication");
+            return;
+        }
 
         if (context->IsGameFound())
         {
@@ -66,7 +67,7 @@ namespace YellowRectangleCyanCircle {
             L(trace, "[Screen::Perform] current game rect: {}", gameRect);
 
             // Clamp current game window to display
-            auto roi = Rect::ClampROI(gameRect, this->currentDisplay.area);
+            auto roi = Rect::ClampROI(gameRect, desktopInfo.Rect);
             L(trace, "[Screen::Perform] roi from game and display intersection: {}", roi);
 
             if (!roi.empty()) mat = mat(roi);

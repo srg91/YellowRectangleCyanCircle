@@ -7,15 +7,19 @@ namespace YellowRectangleCyanCircle {
 
     void Circle::OnDraw(
         const CComPtr<ID2D1HwndRenderTarget>& target,
-        const CComPtr<ID2D1SolidColorBrush>& brush
+        const CComPtr<ID2D1SolidColorBrush>& brush,
+        Point scale
     ) const {
+        float sx = scale.x / 100.0f;
+        float sy = scale.y / 100.0f;
+
         D2D1_ELLIPSE ellipse = D2D1::Ellipse(
             D2D1::Point2F(
-                static_cast<float>(this->x),
-                static_cast<float>(this->y)
+                static_cast<float>(this->x) / sx,
+                static_cast<float>(this->y) / sy
             ),
-            static_cast<float>(this->radius),
-            static_cast<float>(this->radius)
+            static_cast<float>(this->radius) / sx,
+            static_cast<float>(this->radius) / sy
         );
         target->FillEllipse(&ellipse, brush);
     }
@@ -26,13 +30,23 @@ namespace YellowRectangleCyanCircle {
 
     void Rectangle::OnDraw(
         const CComPtr<ID2D1HwndRenderTarget>& target,
-        const CComPtr<ID2D1SolidColorBrush>& brush
+        const CComPtr<ID2D1SolidColorBrush>& brush,
+        Point scale
     ) const {
+        float sx = scale.x / 100.0f;
+        float sy = scale.y / 100.0f;
+
+        auto left = static_cast<float>(this->rect.x);
+        auto top = static_cast<float>(this->rect.y);
+
+        auto right = left + static_cast<float>(this->rect.width);
+        auto bottom = top + static_cast<float>(this->rect.height);
+
         D2D1_RECT_F rectangle = D2D1::RectF(
-            static_cast<float>(this->rect.x),
-            static_cast<float>(this->rect.y),
-            static_cast<float>(this->rect.x + this->rect.width),
-            static_cast<float>(this->rect.y + this->rect.height)
+            left / sx,
+            top / sy,
+            right / sx,
+            bottom / sy
         );
         target->FillRectangle(&rectangle, brush);
     }

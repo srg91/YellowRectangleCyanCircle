@@ -51,6 +51,7 @@ namespace YellowRectangleCyanCircle {
 
         std::unique_lock lock(this->mutex);
         this->rect = WinAPI::GetWindowRect(this->hWnd);
+        L(trace, "[Game::OnWindowMoved] New window rect: {}", this->rect);
     }
 
     void Game::Perform(std::shared_ptr<IContext> context) {

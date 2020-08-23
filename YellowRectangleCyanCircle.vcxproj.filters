@@ -69,6 +69,15 @@
     <ClCompile Include="src\logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\desktop.d3d11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\desktop.d3d9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\desktop.gdi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\main.hpp">
@@ -128,6 +137,15 @@
     <ClInclude Include="src\logging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\desktop.d3d11.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\desktop.d3d9.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\desktop.gdi.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />
@@ -153,5 +171,8 @@
     <Image Include="icon\NotifyIcon_CERE.ico">
       <Filter>Resource Files\icon</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="DeclareDPIAware.manifest" />
   </ItemGroup>
 </Project>

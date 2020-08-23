@@ -37,8 +37,12 @@ namespace YellowRectangleCyanCircle {
         this->updateTimer();
     }
 
-    void Controller::DrawShapes(DetectorType dt, CComPtr<ID2D1HwndRenderTarget> target, CComPtr<ID2D1SolidColorBrush> brush) {
-        L(trace, "[Controller::DrawShapes] called with detector: {}", dt);
+    void Controller::DrawShapes(
+        DetectorType dt,
+        CComPtr<ID2D1HwndRenderTarget> target,
+        CComPtr<ID2D1SolidColorBrush> brush,
+        Point scale) {
+        L(trace, "[Controller::DrawShapes] called with detector [{}] and scale [{}]", dt, scale);
 
         if (!this->IsDetectorEnabled(dt)) {
             L(trace, "[Controller::DrawShapes] detector disabled, do nothing");
@@ -64,8 +68,15 @@ namespace YellowRectangleCyanCircle {
         auto shapes = context->GetShapes(dt);
         L(trace, "[Controller::DrawShapes] shapes count: {}", std::size(shapes));
 
+        auto di = context->GetDesktopInfo();
+        L(trace, "[Controller::DrawShapes] desktop info scale: {}", di.Scale);
+
+        scale.x = di.Scale.x > 0 ? scale.x * di.Scale.x / 100 : scale.x;
+        scale.y = di.Scale.y > 0 ? scale.y * di.Scale.y / 100 : scale.y;
+        L(trace, "[Controller::DrawShapes] updated scale: {}", scale);
+
         for (const auto& shape : shapes) {
-            shape->OnDraw(target, brush);
+            shape->OnDraw(target, brush, scale);
         }
     }
 
