@@ -26,12 +26,18 @@ namespace YellowRectangleCyanCircle {
             L(debug, "[AreaDetector::Perform] got empty screen, do nothing");
             return;
         }
+
         image = image.clone();
-
-        cv::blur(image, image, cv::Size(2, 4), cv::Point(0, 0));
-        cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
-
         auto imageRect = image.size();
+
+        auto gameHeight = context->GetGameRect().height;
+        if (gameHeight <= 0) gameHeight = imageRect.height;
+
+        int hBlurCoef = std::lround(0.00487f * gameHeight - 0.852f);
+        L(trace, "[AreaDetector::Perform] game height [{}] blur coef [{}]", gameHeight, hBlurCoef);
+
+        cv::blur(image, image, cv::Size(hBlurCoef, 4), cv::Point(0, 0));
+        cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
 
         auto halfWidth = imageRect.width / 2;
         auto halfHeight = imageRect.height / 2;
@@ -240,7 +246,7 @@ namespace YellowRectangleCyanCircle {
             return;
         }
 
-        std::vector<std::shared_ptr<IShape>> resultParts;
+        std::vector<std::pair<double, std::shared_ptr<IShape>>> matched;
         for (const auto& part : foundParts) {
             if (part.empty()) {
                 L(trace, "[FingerprintDetector::Perform] found empty part: {}", part);
@@ -261,17 +267,25 @@ namespace YellowRectangleCyanCircle {
 
             L(trace, "[FingerprintDetector::Perform] match template: minVal({}) maxVal({}) minLoc({}) maxLoc({})", minVal, maxVal, minLoc, maxLoc);
 
-            if (maxVal > 0.75f) {
-                resultParts.push_back(
-                    std::make_shared<Rectangle>(part)
-                );
+            if (maxVal > 0.5f) {
+                auto matchedValue = std::make_pair(maxVal, std::make_shared<Rectangle>(part));
+                auto it = std::upper_bound(matched.begin(), matched.end(), matchedValue, [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+                matched.insert(it, matchedValue);
             }
         }
 
-        auto matchedCount = std::size(resultParts);
-        if (matchedCount == 4) {
+        auto matchedCount = std::size(matched);
+        if (matchedCount >= 4) {
             L(debug, "[FingerprintDetector::Perform] matched");
-            context->SetShapes(this->type, resultParts);
+            context->SetShapes(
+                this->type,
+                {
+                    (matched.end() - 4)->second,
+                    (matched.end() - 3)->second,
+                    (matched.end() - 2)->second,
+                    (matched.end() - 1)->second,
+                }
+            );
         }
         else {
             L(debug, "[FingerprintDetector::Perform] incorrect match, count: {}", matchedCount);
@@ -338,6 +352,13 @@ namespace YellowRectangleCyanCircle {
         cv::threshold(image, image, 100, 255, cv::THRESH_BINARY);
 
         auto gameHeight = context->GetGameRect().height;
+        if (gameHeight <= 0) gameHeight = image.size().height;
+
+        double minDist = std::lround(gameHeight * 0.111f - 19.358f);
+        int minRad = std::lround(gameHeight * 0.0332f - 0.808f);
+        int maxRad = std::lround(gameHeight * 0.0332f + 9.192f);
+
+        L(trace, "[KeypadDetector::Perform] game height [{}], minimal distance [{}], min radius [{}], max radius [{}]", gameHeight, minDist, minRad, maxRad);
 
         std::vector<cv::Vec3f> circles;
         cv::HoughCircles(
@@ -345,11 +366,11 @@ namespace YellowRectangleCyanCircle {
             circles,
             cv::HOUGH_GRADIENT,
             1,
-            std::lround(gameHeight * 0.111f - 19.358f),
+            minDist,
             100,
             6,
-            std::lround(gameHeight * 0.0332f - 0.808f),
-            std::lround(gameHeight * 0.0332f + 9.192f)
+            minRad,
+            maxRad
         );
 
         std::uint8_t* imagePtr = image.data;
