@@ -22,12 +22,12 @@ namespace YellowRectangleCyanCircle {
         }
 
         auto image = context->GetScreenImage();
+
         if (std::empty(image)) {
-            L(debug, "[AreaDetector::Perform] got empty screen, do nothing");
+            if (context->IsGameFound()) L(debug, "[AreaDetector::Perform] got empty screen, do nothing");
             return;
         }
 
-        image = image.clone();
         auto imageRect = image.size();
 
         auto gameHeight = context->GetGameRect().height;
@@ -36,14 +36,27 @@ namespace YellowRectangleCyanCircle {
         int hBlurCoef = std::lround(0.00487f * gameHeight - 0.852f);
         L(trace, "[AreaDetector::Perform] game height [{}] blur coef [{}]", gameHeight, hBlurCoef);
 
+        // Shrink image to reduce memory and avoid non-static parts of a game
+        auto halfWidth = imageRect.width / 2;
+        auto almostHalfHeight = (imageRect.height * 10) / 17;
+
+        Rect::Rect roi(
+            Point(halfWidth - almostHalfHeight, 0),
+            Point(halfWidth + almostHalfHeight, (imageRect.height * 4) / 5)
+        );
+        roi = Rect::ClampROI(roi, Rect::Rect(0, 0, imageRect.width, imageRect.height));
+
+        L(trace, "[Screen::Perform] shrink image [{}] => [{}]", imageRect, roi);
+        image = image(roi).clone();
+        imageRect = image.size();
+
         cv::blur(image, image, cv::Size(hBlurCoef, 4), cv::Point(0, 0));
         cv::threshold(image, image, 20, 255, cv::THRESH_BINARY);
 
-        auto halfWidth = imageRect.width / 2;
-        auto halfHeight = imageRect.height / 2;
-        auto sixthHeightPart = imageRect.height / 6;
+        auto widthPart = imageRect.width / 4;
+        auto heightPart = imageRect.height / 6;
 
-        cv::Rect keypadRect, fpRect, fppRect;
+        cv::Rect keypadRect, fpRect, fppRect, clearRect;
 
         std::vector<std::vector<cv::Point>> contours;
         cv::findContours(image, contours, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
@@ -66,24 +79,23 @@ namespace YellowRectangleCyanCircle {
             cv::approxPolyDP(
                 origContour,
                 contour,
-                0.01f * cv::arcLength(origContour, true),
-                true
+                0.01f * cv::arcLength(origContour, false),
+                false
             );
-
-            if (std::size(contour) != 4) continue;
 
             auto contourRect = cv::boundingRect(contour);
 
             // Keypad cracker window
             if (isKeypadEnabled && keypadRect.empty()) {
                 bool xThreshold =
-                    (contourRect.x < halfWidth) &&
-                    (contourRect.br().x > halfWidth);
+                    (contourRect.x < widthPart) &&
+                    (contourRect.br().x > 2 * widthPart) &&
+                    (contourRect.br().x < imageRect.width - widthPart);
 
                 bool yThreshold =
-                    (contourRect.y > sixthHeightPart) &&
-                    (contourRect.y < sixthHeightPart * 2) &&
-                    (contourRect.br().y > imageRect.height - sixthHeightPart);
+                    (contourRect.y > heightPart) &&
+                    (contourRect.y < heightPart * 2) &&
+                    (contourRect.br().y > imageRect.height - heightPart);
 
                 if (xThreshold && yThreshold) {
                     keypadRect = contourRect;
@@ -95,13 +107,13 @@ namespace YellowRectangleCyanCircle {
                 // Fingerprint window
                 if (fpRect.empty()) {
                     bool xThreshold =
-                        (contourRect.x < halfWidth) &&
-                        (contourRect.br().x > halfWidth);
+                        (contourRect.x > widthPart) &&
+                        (contourRect.x < widthPart * 2) &&
+                        (contourRect.br().x > imageRect.width - widthPart);
 
                     bool yThreshold =
-                        (contourRect.y < sixthHeightPart) &&
-                        (contourRect.br().y > sixthHeightPart * 2) &&
-                        (contourRect.br().y < imageRect.height - sixthHeightPart);
+                        (contourRect.y < heightPart * 2) &&
+                        (contourRect.br().y > imageRect.height - heightPart);
 
                     if (xThreshold && yThreshold) {
                         fpRect = contourRect;
@@ -111,11 +123,15 @@ namespace YellowRectangleCyanCircle {
 
                 // Fingerprint parts window
                 if (fppRect.empty()) {
-                    bool xThreshold = contourRect.x < halfWidth&& contourRect.br().x < halfWidth;
+                    bool xThreshold =
+                        (contourRect.x < widthPart) &&
+                        (contourRect.br().x > widthPart) &&
+                        (contourRect.br().x < widthPart * 2);
+
                     bool yThreshold =
-                        contourRect.y > sixthHeightPart &&
-                        contourRect.y < sixthHeightPart * 2 &&
-                        contourRect.br().y > imageRect.height - sixthHeightPart;
+                        (contourRect.y > heightPart) &&
+                        (contourRect.y < heightPart * 2) &&
+                        (contourRect.br().y > imageRect.height - 2 * heightPart);
 
                     if (xThreshold && yThreshold) {
                         fppRect = contourRect;
@@ -123,21 +139,56 @@ namespace YellowRectangleCyanCircle {
                     }
                 }
             }
+
+            if (clearRect.empty()) {
+                bool xThreshold =
+                    (contourRect.x > widthPart) &&
+                    (contourRect.x < widthPart * 2) &&
+                    (contourRect.br().x > widthPart * 2) &&
+                    (contourRect.br().x < imageRect.width - widthPart);
+
+                bool yThreshold =
+                    (contourRect.y > 3 * heightPart) &&
+                    (contourRect.y < imageRect.height - heightPart * 2) &&
+                    (contourRect.br().y > imageRect.height - heightPart * 2) &&
+                    (contourRect.br().y < imageRect.height - heightPart);
+
+                if (xThreshold && yThreshold && contourRect.width >= 200) {
+                    clearRect = contourRect;
+                    continue;
+                }
+            }
         }
 
         L(trace, "[AreaDetector::Perform] keypad rect: [{}]", keypadRect);
         L(trace, "[AreaDetector::Perform] fingerprint rects: [{}] [{}]", fpRect, fppRect);
+        L(trace, "[AreaDetector::Perform] clear rect: [{}]", clearRect);
 
-        if (isKeypadEnabled && !keypadRect.empty()) {
+        bool isKeypadFound = isKeypadEnabled && !keypadRect.empty();
+        bool isFingerprintFound = isFingerprintEnabled && !(fpRect.empty() || fppRect.empty());
+
+        if (isKeypadFound) {
+            auto area = Rect::Rect(
+                Point(
+                    roi.x + keypadRect.x,
+                    roi.y + keypadRect.y
+                ),
+                Point(
+                    roi.x + keypadRect.br().x,
+                    roi.y + keypadRect.br().y
+                )
+            );
             L(debug, "[AreaDetector::Perform] found keypad working area: {}", keypadRect);
 
             context->SetCurrentDetector(DetectorType::Keypad);
-            context->SetWorkingArea(keypadRect);
+            context->SetWorkingArea(area);
         }
-        else if (isFingerprintEnabled && !(fpRect.empty() || fppRect.empty())) {
-            auto area = cv::Rect(
-                cv::Point(fppRect.x, fpRect.y),
-                cv::Point(fpRect.br().x, fppRect.br().y)
+        else if (isFingerprintFound) {
+            auto area = Rect::FromPoints(
+                roi.x + fppRect.x,
+                roi.y + fpRect.y,
+                roi.x + fpRect.br().x,
+                roi.y + fppRect.br().y
             );
 
             L(debug, "[AreaDetector::Perform] found fingeprint working area: {}", area);
@@ -145,8 +196,18 @@ namespace YellowRectangleCyanCircle {
             context->SetCurrentDetector(DetectorType::Fingerprint);
             context->SetWorkingArea(area);
         }
-        else {
-            L(debug, "[AreaDetector::Perform] not found any area, clear shapes and counters");
+
+        bool isClear =
+            !(isKeypadFound || isFingerprintFound) ||
+            !clearRect.empty();
+
+        if (isClear) {
+            if (clearRect.empty()) {
+                L(debug, "[AreaDetector::Perform] not found any area, clear shapes and counters");
+            }
+            else {
+                L(debug, "[AreaDetector::Perform] found clear area, clear shapes and counters");
+            }
 
             context->ClearShapes(DetectorType::Fingerprint);
             context->ClearShapes(DetectorType::Keypad);
@@ -294,7 +355,7 @@ namespace YellowRectangleCyanCircle {
 
     const std::array<std::unordered_set<int>, 2> KeypadDetector::table({ {
         {14, 15, 16, 17, 18, 28, 29, 30, 31, 32, 41, 42, 43, 44, 45, 55, 56, 57, 58, 59, 68, 69, 70, 71, 72, 82, 83, 84, 85, 86},
-        {15, 16, 17, 18, 19, 29, 30, 31, 32, 33, 42, 43, 44, 45, 46, 56, 57, 58, 59, 60, 70, 71, 72, 73, 74},
+        {18, 19, 20, 21, 22, 35, 36, 37, 38, 39, 51, 52, 53, 54, 55, 67, 68, 69, 70, 71, 84, 85, 86, 87, 88},
     } });
 
     void KeypadDetector::Perform(std::shared_ptr<IContext> context) {
@@ -346,7 +407,8 @@ namespace YellowRectangleCyanCircle {
             return;
         }
 
-        image = image(context->GetWorkingArea()).clone();
+        auto area = context->GetWorkingArea();
+        image = image(area).clone();
 
         cv::blur(image, image, cv::Size(3, 3), cv::Point(0, 0));
         cv::threshold(image, image, 100, 255, cv::THRESH_BINARY);
@@ -375,9 +437,9 @@ namespace YellowRectangleCyanCircle {
 
         std::uint8_t* imagePtr = image.data;
 
-        std::vector<std::shared_ptr<IShape>> foundCircles;
-        L(trace, "[KeypadDetector::Perform] found circles count: {}", std::size(foundCircles));
+        L(trace, "[KeypadDetector::Perform] found circles count: {}", std::size(circles));
 
+        std::vector<std::shared_ptr<IShape>> foundCircles;
         for (const auto& circle : circles) {
             unsigned int x = cvRound(circle[0]), y = cvRound(circle[1]);
             unsigned int r = cvRound(circle[2]);

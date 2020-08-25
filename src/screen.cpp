@@ -55,23 +55,22 @@ namespace YellowRectangleCyanCircle {
 
         L(trace, "[Screen::Perform] current duplication desktop: {}", desktopInfo.Rect);
 
+        if (!context->IsGameFound()) return;
+
         Mat mat(desktopInfo.Rect.height, desktopInfo.Rect.width, CV_8UC4);
         if (!this->desktop->Duplicate(std::data(mat))) {
             L(debug, "[Screen::Perform] unable to perform desktop duplication");
             return;
         }
 
-        if (context->IsGameFound())
-        {
-            auto gameRect = context->GetGameRect();
-            L(trace, "[Screen::Perform] current game rect: {}", gameRect);
+        auto gameRect = context->GetGameRect();
+        L(trace, "[Screen::Perform] current game rect: {}", gameRect);
 
-            // Clamp current game window to display
-            auto roi = Rect::ClampROI(gameRect, desktopInfo.Rect);
-            L(trace, "[Screen::Perform] roi from game and display intersection: {}", roi);
+        // Clamp current game window to display
+        auto roi = Rect::ClampROI(gameRect, desktopInfo.Rect);
+        L(trace, "[Screen::Perform] roi from game and display intersection: {}", roi);
 
-            if (!roi.empty()) mat = mat(roi);
-        }
+        if (!roi.empty()) mat = mat(roi);
 
         cv::cvtColor(mat, mat, cv::COLOR_BGRA2GRAY);
         context->SetScreenImage(mat);
